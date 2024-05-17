@@ -1,17 +1,35 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Url from '@/models/Url';
+import { getUrlByShortId, deleteUrl } from '@/services/urlService';
+import { HttpStatusEnum } from '@/utils/httpStatusEnum';
 
 export async function GET(req: Request, { params }: { params: { shortId: string } }) {
-    await dbConnect();
-
     const { shortId } = params;
 
-    const urlDoc = await Url.findOne({ shortId });
+    try {
+        const urlDoc = await getUrlByShortId(shortId);
 
-    if (!urlDoc) {
-        return NextResponse.json({ error: 'URL not found' }, { status: 404 });
+        if (!urlDoc) {
+            return NextResponse.json({ error: 'URL not found' }, { status: HttpStatusEnum.NotFound });
+        }
+
+        return NextResponse.redirect(urlDoc.longUrl, HttpStatusEnum.MovedPermanently);
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to fetch URL' }, { status: HttpStatusEnum.InternalServerError });
     }
+}
 
-    return NextResponse.redirect(urlDoc.originalUrl);
+export async function DELETE(req: Request, { params }: { params: { shortId: string } }) {
+    const { shortId } = params;
+
+    try {
+        const deletedUrl = await deleteUrl(shortId);
+
+        if (!deletedUrl) {
+            return NextResponse.json({ error: 'URL not found' }, { status: HttpStatusEnum.NotFound });
+        }
+
+        return NextResponse.json({ message: 'URL deleted successfully' }, { status: HttpStatusEnum.OK });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to delete URL' }, { status: HttpStatusEnum.InternalServerError });
+    }
 }

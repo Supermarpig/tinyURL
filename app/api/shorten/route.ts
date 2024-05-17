@@ -1,20 +1,18 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import Url from '@/models/Url';
-import { nanoid } from 'nanoid';
+import { createUrl } from '@/services/urlService';
+import { HttpStatusEnum } from '@/utils/httpStatusEnum';
 
 export async function POST(req: Request) {
-    await dbConnect();
+    const { longUrl, title, description, imageUrl } = await req.json();
 
-    const { originalUrl } = await req.json();
-
-    if (!originalUrl) {
-        return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+    if (!longUrl) {
+        return NextResponse.json({ error: 'URL is required' }, { status: HttpStatusEnum.BadRequest });
     }
 
-    const shortId = nanoid(7);
-    const newUrl = new Url({ originalUrl, shortId });
-    await newUrl.save();
-
-    return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${shortId}` }, { status: 200 });
+    try {
+        const newUrl = await createUrl(longUrl, title, description, imageUrl);
+        return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${newUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to create URL' }, { status: HttpStatusEnum.InternalServerError });
+    }
 }

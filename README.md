@@ -2,6 +2,7 @@
 
 ## 資料夾結構
 
+```BASH
 short-url-service/
 ├── app/
 │   ├── api/
@@ -17,6 +18,8 @@ short-url-service/
 │   └── mongodb.ts
 ├── models/
 │   └── Url.ts
+├── utils/
+│   └── httpStatusEnum.ts
 ├── public/
 ├── .env.local
 ├── .eslintrc.json
@@ -28,31 +31,7 @@ short-url-service/
 ├── README.md
 ├── tailwind.config.ts
 └── tsconfig.json
-
-## 專案結構
-
-app/ - 包含 Next.js 的頁面和 API 路由。
-api/ - 包含 API 路由處理程序。
-[shortId]/route.ts - 處理短網址重定向的 API 路由。
-shorten/route.ts - 處理縮短 URL 的 API 路由。
-globals.css - 使用 TailwindCSS 的全局樣式。
-layout.tsx - 應用程式的佈局元件。
-page.tsx - 應用程式的首頁。
-lib/ - 包含實用函數和 MongoDB 連接邏輯。
-mongodb.ts - MongoDB 連接邏輯。
-models/ - 包含 Mongoose 模型。
-Url.ts - URL 的 Mongoose 模型。
-public/ - 包含靜態文件。
-.env.local - 環境變數。
-.eslintrc.json - ESLint 配置。
-.gitignore - Git 忽略文件。
-next.config.mjs - Next.js 配置。
-package.json - 專案的相依套件和腳本。
-pnpm-lock.yaml - pnpm 的鎖定文件。
-postcss.config.mjs - PostCSS 配置。
-README.md - 本 README 文件。
-tailwind.config.ts - TailwindCSS 配置。
-tsconfig.json - TypeScript 配置。
+```
 
 ## API 路由
 
@@ -61,18 +40,22 @@ POST /api/shorten
 
 請求體：
 
-json
-複製程式碼
+```JSON
+
 {
   "originalUrl": "<https://example.com>"
 }
+```
+
 回應：
 
-json
-複製程式碼
+```JSON
+
 {
   "shortUrl": "<http://localhost:3000/abcdef>"
 }
+```
+
 GET /api/[shortId]
 此路由用來重定向到對應短 ID 的原始 URL。
 
