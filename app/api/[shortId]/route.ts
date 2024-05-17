@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getUrlByShortId, deleteUrl } from '@/services/urlService';
 import { HttpStatusEnum } from '@/utils/httpStatusEnum';
 
-export async function GET(req: Request, { params }: { params: { shortId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { shortId: string } }) {
     const { shortId } = params;
 
     try {
@@ -13,11 +13,16 @@ export async function GET(req: Request, { params }: { params: { shortId: string 
         }
 
         return NextResponse.redirect(urlDoc.longUrl, HttpStatusEnum.MovedPermanently);
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to fetch URL' }, { status: HttpStatusEnum.InternalServerError });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error('Failed to fetch URL', error.message);
+            return NextResponse.json({ error: `Failed to fetch URL: ${error.message}` }, { status: HttpStatusEnum.InternalServerError });
+        } else {
+            console.error('An unknown error occurred while fetching URL');
+            return NextResponse.json({ error: 'An unknown error occurred while fetching URL' }, { status: HttpStatusEnum.InternalServerError });
+        }
     }
 }
-
 export async function DELETE(req: Request, { params }: { params: { shortId: string } }) {
     const { shortId } = params;
 

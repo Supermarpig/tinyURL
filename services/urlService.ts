@@ -25,6 +25,13 @@ export async function getUrlByShortId(shortId: string) {
     return urlDoc;
 }
 
+export async function getUrlByLongUrl(longUrl: string) {
+    await dbConnect();
+
+    const urlDoc = await Url.findOne({ longUrl });
+    return urlDoc;
+}
+
 export async function updateUrl(shortId: string, updateData: Partial<{ longUrl: string; title: string; description: string; imageUrl: string }>) {
     await dbConnect();
 

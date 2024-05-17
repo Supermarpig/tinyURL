@@ -38,8 +38,6 @@ short-url-service/
 POST /api/shorten
 此路由用來縮短給定的 URL。
 
-請求體：
-
 ```JSON
 
 {

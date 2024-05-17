@@ -3,7 +3,7 @@
 import { useState, FormEvent } from 'react';
 
 export default function Home() {
-  const [originalUrl, setOriginalUrl] = useState<string>('');
+  const [longUrl, setLongUrl] = useState<string>('');
   const [shortUrl, setShortUrl] = useState<string>('');
 
   const handleSubmit = async (e: FormEvent) => {
@@ -14,7 +14,7 @@ export default function Home() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ originalUrl }),
+      body: JSON.stringify({ longUrl }),  
     });
 
     const data = await res.json();
@@ -28,8 +28,8 @@ export default function Home() {
         <form onSubmit={handleSubmit} className="mb-4 flex flex-col items-center">
           <input
             type="url"
-            value={originalUrl}
-            onChange={(e) => setOriginalUrl(e.target.value)}
+            value={longUrl}  
+            onChange={(e) => setLongUrl(e.target.value)}  
             placeholder="Enter your URL"
             className="border p-2 mb-4 w-full text-gray-400"
             required
