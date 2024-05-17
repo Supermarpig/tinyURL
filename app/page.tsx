@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-yellow-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-xl">
         <h1 className="text-2xl font-bold mb-4 text-orange-600 text-center">Short URL Service</h1>
         <form onSubmit={handleSubmit} className="mb-4 flex flex-col items-center">
           <input
