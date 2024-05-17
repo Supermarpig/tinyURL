@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createUrl, getUrlByLongUrl } from '@/services/urlService';
 import { HttpStatusEnum } from '@/utils/httpStatusEnum';
+import { validateUrl } from '@/utils/validateUrl';
 
 export async function POST(req: Request) {
     try {
@@ -9,6 +10,13 @@ export async function POST(req: Request) {
         if (!longUrl) {
             return NextResponse.json({ error: 'URL is required' }, { status: HttpStatusEnum.BadRequest });
         }
+
+        // 檢查 URL 是否可連接
+        const isValidUrl = await validateUrl(longUrl);
+        if (!isValidUrl) {
+            return NextResponse.json({ error: 'Invalid or unreachable URL' }, { status: HttpStatusEnum.BadRequest });
+        }
+
 
         // 檢查是否已存在相同的長網址
         const existingUrl = await getUrlByLongUrl(longUrl);
