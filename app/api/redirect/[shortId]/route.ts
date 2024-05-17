@@ -12,7 +12,12 @@ export async function GET(req: Request, { params }: { params: { shortId: string 
             return NextResponse.json({ error: 'URL not found' }, { status: HttpStatusEnum.NotFound });
         }
 
-        return NextResponse.json({ longUrl: urlDoc.longUrl }, { status: HttpStatusEnum.OK });
+        return NextResponse.json({
+            longUrl: urlDoc.longUrl,
+            title: urlDoc.title || 'Tiny URL',
+            description: urlDoc.description || 'Customizing your URLs for you.',
+            imageUrl: urlDoc.imageUrl || '/default-image.png'
+        }, { status: HttpStatusEnum.OK });
     } catch (error: unknown) {
         if (error instanceof Error) {
             console.error('Failed to fetch URL', error.message);

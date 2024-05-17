@@ -38,7 +38,7 @@ export default function Home() {
         </form>
         {shortUrl && (
           <div className="flex items-center justify-end">
-            <p>Short URL: <a href={shortUrl} className="text-orange-600 underline">{shortUrl}</a></p>
+            <a href={shortUrl} className="text-orange-600 underline">{shortUrl}</a>
           </div>
         )}
       </div>
