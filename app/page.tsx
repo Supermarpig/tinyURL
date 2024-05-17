@@ -37,7 +37,7 @@ export default function Home() {
           <button type="submit" className="bg-orange-500 text-white p-2 rounded w-full">Shorten</button>
         </form>
         {shortUrl && (
-          <div className="text-center">
+          <div className="flex items-center justify-end">
             <p>Short URL: <a href={shortUrl} className="text-orange-600 underline">{shortUrl}</a></p>
           </div>
         )}
