@@ -31,3 +31,7 @@ body {
     text-wrap: balance;
   }
 }
+
+.loader {
+  border-top-color: #3490dc;
+}
