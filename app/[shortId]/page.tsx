@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import RedirectPageClient from './RedirectPageClient';
 
 interface MetadataProps {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: RedirectPageProps) {
     const data = await fetchMetadata(shortId);
 
     if (!data) {
-        notFound();
+        redirect('/404');
     }
 
     return {
@@ -64,7 +64,7 @@ export default async function Page({ params }: RedirectPageProps) {
     const data = await fetchMetadata(shortId);
 
     if (!data) {
-        notFound();
+        redirect('/404');
     }
 
     return (
