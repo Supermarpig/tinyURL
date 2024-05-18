@@ -1,24 +1,33 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function Home() {
   const [longUrl, setLongUrl] = useState<string>('');
   const [shortUrl, setShortUrl] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setLoading(true); // 设置加载状态为 true
 
-    const res = await fetch('/api/shorten', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ longUrl }),  
-    });
+    try {
+      const res = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ longUrl }),
+      });
 
-    const data = await res.json();
-    setShortUrl(data.shortUrl);
+      const data = await res.json();
+      setShortUrl(data.shortUrl);
+    } catch (error) {
+      console.error('Error shortening URL:', error);
+    } finally {
+      setLoading(false); // 请求完成后设置加载状态为 false
+    }
   };
 
   return (
@@ -28,14 +37,17 @@ export default function Home() {
         <form onSubmit={handleSubmit} className="mb-4 flex flex-col items-center">
           <input
             type="url"
-            value={longUrl}  
-            onChange={(e) => setLongUrl(e.target.value)}  
+            value={longUrl}
+            onChange={(e) => setLongUrl(e.target.value)}
             placeholder="Enter your URL"
             className="border p-2 mb-4 w-full text-gray-400"
             required
           />
-          <button type="submit" className="bg-orange-500 text-white p-2 rounded w-full">Shorten</button>
+          <button type="submit" className="bg-orange-500 text-white p-2 rounded w-full flex items-center justify-center">
+            Shorten {loading && <LoadingSpinner />}
+          </button>
         </form>
+
         {shortUrl && (
           <div className="flex items-center justify-end">
             <a href={shortUrl} className="text-orange-600 underline">{shortUrl}</a>

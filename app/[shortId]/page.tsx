@@ -1,35 +1,59 @@
-'use client';
+import { notFound } from 'next/navigation';
+import Head from 'next/head';
+import { Metadata } from 'next';
+import RedirectPageClient from './RedirectPageClient';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+interface MetadataProps {
+    title: string;
+    description: string;
+    url: string;
+    image: string;
+}
 
-export default function RedirectPage({ params }: { params: { shortId: string } }) {
-    const router = useRouter();
-    const [loading, setLoading] = useState(true);
+interface RedirectPageProps {
+    params: { shortId: string };
+}
 
-    useEffect(() => {
-        async function fetchUrl() {
-            const res = await fetch(`/api/redirect/${params.shortId}`);
-            if (res.ok) {
-                const data = await res.json();
-                router.replace(data.longUrl);
-            } else {
-                router.replace('/404'); // or another error page
-            }
-            setLoading(false);
-        }
+async function fetchMetadata(shortId: string): Promise<{ metadata: MetadataProps, longUrl: string } | null> {
+    const res = await fetch(`${process.env.BASE_URL}/api/redirect/${shortId}`);
 
-        fetchUrl();
-    }, [params.shortId, router]);
+    if (res.ok) {
+        const data = await res.json();
+        return {
+            metadata: {
+                title: data.title || 'Tiny URL',
+                description: data.description || 'Customizing your URLs for you.',
+                url: `${process.env.BASE_URL}/${shortId}`,
+                image: data.imageUrl || '/default-image.png',
+            },
+            longUrl: data.longUrl,
+        };
+    } else {
+        return null;
+    }
+}
+
+export default async function Page({ params }: RedirectPageProps) {
+    const { shortId } = params;
+    const data = await fetchMetadata(shortId);
+
+    if (!data) {
+        notFound();
+    }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            {loading && (
-                <div className="flex flex-col items-center">
-                    <div className="loader animate-spin rounded-full h-32 w-32 border-t-4 border-blue-500 mb-4"></div>
-                    <p className="text-xl text-gray-700">Redirecting...</p>
-                </div>
-            )}
-        </div>
+        <>
+            <Head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>{data.metadata.title}</title>
+                <meta name="description" content={data.metadata.description} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={data.metadata.url} />
+                <meta property="og:title" content={data.metadata.title} />
+                <meta property="og:description" content={data.metadata.description} />
+                <meta property="og:image" content={data.metadata.image} />
+            </Head>
+            <RedirectPageClient metadata={data.metadata} longUrl={data.longUrl} />
+        </>
     );
 }
