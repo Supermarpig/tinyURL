@@ -22,7 +22,7 @@ const customString = (maxLength: number, message: string) =>
 const schema = z.object({
     title: customString(60, "Title must be 60 English characters or 30 Chinese characters or less"),
     description: customString(200, "Description must be 200 English characters or 100 Chinese characters or less"),
-    imageUrl: z.string().url("Must be a valid URL"),
+    imageUrl: z.string().url("Must be a valid URL").or(z.string().max(0, "Must be a valid URL or empty")), 
 });
 
 type FormData = z.infer<typeof schema>;

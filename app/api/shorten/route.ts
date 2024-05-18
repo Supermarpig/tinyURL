@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createUrl, getUrlByLongUrl } from '@/services/urlService';
+import { createUrl, getUrlByLongUrl, updateUrl } from '@/services/urlService';
 import { HttpStatusEnum } from '@/utils/httpStatusEnum';
 import { validateUrl } from '@/utils/validateUrl';
 
@@ -22,7 +22,14 @@ export async function POST(req: Request) {
         const existingUrl = await getUrlByLongUrl(longUrl);
 
         if (existingUrl) {
-            // 如果已存在，返回已存在的短網址
+            // 檢查是否需要更新的字段
+            const needsUpdate = existingUrl.title !== title || existingUrl.description !== description || existingUrl.imageUrl !== imageUrl;
+            if (needsUpdate) {
+                // 更新短網址
+                const updatedUrl = await updateUrl(existingUrl.shortUrl, { title, description, imageUrl });
+                return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${updatedUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
+            }
+            // 如果字段沒有變更，返回已存在的短網址
             return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${existingUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
         }
 

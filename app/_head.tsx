@@ -8,8 +8,6 @@ interface CustomHeadProps {
 }
 
 const CustomHead = ({ title, description, url, image }: CustomHeadProps) => {
-    console.log('CustomHead rendered with:', { title, description, url, image }); // 調試日誌
-
     return (
         <Head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
