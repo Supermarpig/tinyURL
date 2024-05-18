@@ -31,26 +31,26 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-yellow-100">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-green-500">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-xl">
-        <h1 className="text-2xl font-bold mb-4 text-orange-600 text-center">Short URL Service</h1>
+        <h1 className="text-2xl font-bold mb-4 text-blue-600 text-center">Short URL Service</h1>
         <form onSubmit={handleSubmit} className="mb-4 flex flex-col items-center">
           <input
             type="url"
             value={longUrl}
             onChange={(e) => setLongUrl(e.target.value)}
             placeholder="Enter your URL"
-            className="border p-2 mb-4 w-full text-gray-400"
+            className="border p-2 mb-4 w-full text-gray-200"
             required
           />
-          <button type="submit" className="bg-orange-500 text-white p-2 rounded w-full flex items-center justify-center">
+          <button type="submit" className="bg-green-500 text-white p-2 rounded w-full flex items-center justify-center">
             Shorten {loading && <LoadingSpinner />}
           </button>
         </form>
 
         {shortUrl && (
           <div className="flex items-center justify-end">
-            <a href={shortUrl} className="text-orange-600 underline">{shortUrl}</a>
+            <a href={shortUrl} className="text-green-600 underline font-bold">{shortUrl}</a>
           </div>
         )}
       </div>

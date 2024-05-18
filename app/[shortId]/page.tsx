@@ -1,6 +1,4 @@
 import { notFound } from 'next/navigation';
-import Head from 'next/head';
-import { Metadata } from 'next';
 import RedirectPageClient from './RedirectPageClient';
 
 interface MetadataProps {
@@ -33,6 +31,34 @@ async function fetchMetadata(shortId: string): Promise<{ metadata: MetadataProps
     }
 }
 
+export async function generateMetadata({ params }: RedirectPageProps) {
+    const { shortId } = params;
+    const data = await fetchMetadata(shortId);
+
+    if (!data) {
+        notFound();
+    }
+
+    return {
+        title: data.metadata.title,
+        description: data.metadata.description,
+        openGraph: {
+            type: 'website',
+            url: data.metadata.url,
+            title: data.metadata.title,
+            description: data.metadata.description,
+            images: [data.metadata.image],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            url: data.metadata.url,
+            title: data.metadata.title,
+            description: data.metadata.description,
+            image: data.metadata.image,
+        },
+    };
+}
+
 export default async function Page({ params }: RedirectPageProps) {
     const { shortId } = params;
     const data = await fetchMetadata(shortId);
@@ -42,18 +68,6 @@ export default async function Page({ params }: RedirectPageProps) {
     }
 
     return (
-        <>
-            <Head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>{data.metadata.title}</title>
-                <meta name="description" content={data.metadata.description} />
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content={data.metadata.url} />
-                <meta property="og:title" content={data.metadata.title} />
-                <meta property="og:description" content={data.metadata.description} />
-                <meta property="og:image" content={data.metadata.image} />
-            </Head>
-            <RedirectPageClient metadata={data.metadata} longUrl={data.longUrl} />
-        </>
+        <RedirectPageClient metadata={data.metadata} longUrl={data.longUrl} />
     );
 }
