@@ -11,6 +11,9 @@ import InfoDialog from '@/components/InfoDialog';
 
 const schema = z.object({
   longUrl: z.string().url('Invalid URL format').nonempty('URL is required'),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().optional()
 });
 
 type FormData = z.infer<typeof schema>;
@@ -29,13 +32,18 @@ export default function Home() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
 
+    const updateData: Partial<FormData> = {};
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (imageUrl) updateData.imageUrl = imageUrl;
+
     try {
       const res = await fetch('/api/shorten', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ longUrl: data.longUrl, title, description, imageUrl }),
+        body: JSON.stringify({ longUrl: data.longUrl, ...updateData }),
       });
 
       if (res.ok) {

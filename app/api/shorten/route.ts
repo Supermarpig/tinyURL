@@ -17,16 +17,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid or unreachable URL' }, { status: HttpStatusEnum.BadRequest });
         }
 
-
         // 檢查是否已存在相同的長網址
         const existingUrl = await getUrlByLongUrl(longUrl);
 
         if (existingUrl) {
             // 檢查是否需要更新的字段
-            const needsUpdate = existingUrl.title !== title || existingUrl.description !== description || existingUrl.imageUrl !== imageUrl;
+            const needsUpdate = (title && existingUrl.title !== title) ||
+                (description && existingUrl.description !== description) ||
+                (imageUrl && existingUrl.imageUrl !== imageUrl);
+
             if (needsUpdate) {
                 // 更新短網址
-                const updatedUrl = await updateUrl(existingUrl.shortUrl, { title, description, imageUrl });
+                const updateData: Partial<{ title: string; description: string; imageUrl: string }> = {};
+                if (title) updateData.title = title;
+                if (description) updateData.description = description;
+                if (imageUrl) updateData.imageUrl = imageUrl;
+
+                const updatedUrl = await updateUrl(existingUrl.shortUrl, updateData);
                 return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${updatedUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
             }
             // 如果字段沒有變更，返回已存在的短網址
