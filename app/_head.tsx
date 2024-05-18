@@ -8,7 +8,7 @@ interface CustomHeadProps {
 }
 
 const CustomHead = ({ title, description, url, image }: CustomHeadProps) => {
-    console.log('CustomHead rendered with:', { title, description, url, image }); // 调试日志
+    console.log('CustomHead rendered with:', { title, description, url, image }); // 調試日誌
 
     return (
         <Head>
