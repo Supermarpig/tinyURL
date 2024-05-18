@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createUrl, getUrlByLongUrl, updateUrl } from '@/services/urlService';
+import { createUrl, getUrlByLongUrl, updateUrl, getUrlByShortId } from '@/services/urlService';
 import { HttpStatusEnum } from '@/utils/httpStatusEnum';
 import { validateUrl } from '@/utils/validateUrl';
 
@@ -15,6 +15,18 @@ export async function POST(req: Request) {
         const isValidUrl = await validateUrl(longUrl);
         if (!isValidUrl) {
             return NextResponse.json({ error: 'Invalid or unreachable URL' }, { status: HttpStatusEnum.BadRequest });
+        }
+
+        // 檢查是否已經有存在的短網址
+        const url = new URL(longUrl);
+        const baseUrl = process.env.BASE_URL;
+
+        if (url.origin === baseUrl) {
+            const shortId = url.pathname.slice(1);
+            const existingShortUrl = await getUrlByShortId(shortId);
+            if (existingShortUrl) {
+                return NextResponse.json({ shortUrl: `${baseUrl}/${existingShortUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
+            }
         }
 
         // 檢查是否已存在相同的長網址
@@ -40,7 +52,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${existingUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
         }
 
-        // 如果不存在，創建新短網址
+        // 創建新的短網址
         const newUrl = await createUrl(longUrl, title, description, imageUrl);
         return NextResponse.json({ shortUrl: `${process.env.BASE_URL}/${newUrl.shortUrl}` }, { status: HttpStatusEnum.OK });
     } catch (error: unknown) {

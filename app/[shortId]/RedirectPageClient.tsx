@@ -19,7 +19,6 @@ export default function RedirectPageClient({ metadata, longUrl }: RedirectPageCl
     const router = useRouter();
 
     useEffect(() => {
-        console.log('Redirecting to:', longUrl); // 调试日志
         router.replace(longUrl);
     }, [longUrl, router]);
 
