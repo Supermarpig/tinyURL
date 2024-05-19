@@ -22,7 +22,7 @@ const customString = (maxLength: number, message: string) =>
 const schema = z.object({
     title: customString(60, "Title must be 60 English characters or 30 Chinese characters or less"),
     description: customString(200, "Description must be 200 English characters or 100 Chinese characters or less"),
-    imageUrl: z.string().url("Must be a valid URL").or(z.string().max(0, "Must be a valid URL or empty")), 
+    imageUrl: z.string().url("Must be a valid URL").or(z.string().max(0, "Must be a valid URL or empty")),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -39,7 +39,44 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
         defaultValues: initialValues,
     });
 
-    const submitForm = (data: FormData) => {
+    const [imageError, setImageError] = useState<string | null>(null);
+
+    const checkImage = (url: string): Promise<{ width: number, height: number }> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                if (img.width >= 600 && img.height >= 315) {
+                    resolve({ width: img.width, height: img.height });
+                } else {
+                    reject(new Error("Image dimensions are too small. Minimum dimensions are 600x315 pixels."));
+                }
+            };
+            img.onerror = () => reject(new Error("Invalid image URL or unable to load the image."));
+            img.src = url;
+        });
+    };
+
+    const submitForm = async (data: FormData) => {
+        setImageError(null);
+        if (data.imageUrl) {
+            try {
+                const response = await fetch(data.imageUrl);
+                const blob = await response.blob();
+                if (blob.size > 5 * 1024 * 1024) {
+                    throw new Error("Image file size exceeds 5MB");
+                }
+                const imageUrlObject = URL.createObjectURL(blob);
+                await checkImage(imageUrlObject);
+                URL.revokeObjectURL(imageUrlObject);  // 釋放URL對象
+            } catch (error) {
+                if (error instanceof Error) {
+                    setImageError(error.message);
+                } else {
+                    setImageError("An unknown error occurred.");
+                }
+                return;
+            }
+        }
         onSubmit(data);
         setIsOpen(false);
     };
@@ -95,6 +132,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
                             onBlur={() => trigger("imageUrl")}
                         />
                         {errors.imageUrl && <p className="text-red-600">{errors.imageUrl.message}</p>}
+                        {imageError && <p className="text-red-600">{imageError}</p>}
                     </div>
                     <DialogFooter>
                         <Button type="submit">Submit</Button>

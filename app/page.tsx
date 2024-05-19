@@ -72,7 +72,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-green-500">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-green-500 p-8">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-xl">
         <h1 className="text-2xl font-bold mb-4 text-blue-600 text-center">Short URL Service</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="mb-4 flex flex-col items-center">
