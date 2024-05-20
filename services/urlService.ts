@@ -12,6 +12,7 @@ export async function createUrl(longUrl: string, title?: string, description?: s
         imageUrl: imageUrl || '',
         longUrl,
         shortUrl,
+        counts: [] // 明確初始化 counts 為數組
     });
 
     await newUrl.save();

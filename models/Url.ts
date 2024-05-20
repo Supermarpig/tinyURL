@@ -8,7 +8,12 @@ export interface Click {
     location?: string;
     os?: string;
     browser?: string;
-    deviceType?: string; // 添加 deviceType 欄位
+}
+
+export interface Count {
+    type: string;
+    value: string;
+    count: number;
 }
 
 export interface IUrl extends Document {
@@ -19,6 +24,7 @@ export interface IUrl extends Document {
     shortUrl: string;
     clicks: Click[];
     clickCount: number; // 用於快速統計總點擊數
+    counts: Count[]; // 用於存儲不同類型的計數
 }
 
 const ClickSchema = new Schema<Click>({
@@ -28,8 +34,13 @@ const ClickSchema = new Schema<Click>({
     userAgent: String,
     location: String,
     os: String,
-    browser: String,
-    deviceType: String // 添加 deviceType 欄位
+    browser: String
+});
+
+const CountSchema = new Schema<Count>({
+    type: { type: String, required: true },
+    value: { type: String, required: true },
+    count: { type: Number, default: 0 }
 });
 
 const UrlSchema = new Schema<IUrl>({
@@ -39,10 +50,19 @@ const UrlSchema = new Schema<IUrl>({
     longUrl: String,
     shortUrl: String,
     clicks: { type: [ClickSchema], default: [] },
-    clickCount: { type: Number, default: 0 }
+    clickCount: { type: Number, default: 0 },
+    counts: { type: [CountSchema], default: [] }
 }, {
     timestamps: true, // 自動添加 createdAt 和 updatedAt 欄位
     collection: 'data' // 指定集合名稱
+});
+
+// 在保存之前檢查 counts 是否為數組
+UrlSchema.pre('save', function (next) {
+    if (!Array.isArray(this.counts)) {
+        this.counts = [];
+    }
+    next();
 });
 
 export default mongoose.models.Url || mongoose.model<IUrl>('Url', UrlSchema);

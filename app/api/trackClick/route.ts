@@ -1,19 +1,22 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Url from '@/models/Url';
+import Url, { Count } from '@/models/Url';
 import { HttpStatusEnum } from '@/utils/httpStatusEnum';
+import useragent from 'useragent';
 
 export async function POST(request: Request) {
     let body;
     try {
         body = await request.json();
     } catch (error) {
+        console.error('Invalid request body:', error);
         return NextResponse.json({ error: 'Invalid request body' }, { status: HttpStatusEnum.BadRequest });
     }
 
     const { shortId }: { shortId: string } = body;
 
     if (!shortId) {
+        console.error('ShortId is required');
         return NextResponse.json({ error: 'ShortId is required' }, { status: HttpStatusEnum.BadRequest });
     }
 
@@ -29,45 +32,87 @@ export async function POST(request: Request) {
     const headers = request.headers;
     const referrer = headers.get('referer') || '';
     const ipAddress = headers.get('x-forwarded-for')?.split(',')[0].trim() || '';
-    const userAgent = headers.get('user-agent') || '';
+    const userAgentString = headers.get('user-agent') || '';
 
-    // 使用 MongoDB 的原子操作來更新計數
-    const result = await Url.findOneAndUpdate(
-        { shortUrl: shortId, 'clicks.date': utcToday },
-        { $inc: { 'clicks.$.count': 1 } },
-        { new: true }
-    );
+    const agent = useragent.parse(userAgentString);
+    const os = agent.os.toString();
+    const browser = agent.toAgent();
 
-    if (!result) {
-        // 如果沒有匹配的文檔，插入新的點選記錄
-        await Url.updateOne(
-            { shortUrl: shortId },
-            {
-                $push: {
-                    clicks: {
-                        date: utcToday,
-                        count: 1,
-                        referrer,
-                        ipAddress,
-                        userAgent,
-                        location: '' // 可以使用第三方API來獲取基於IP的地理位置
+    // 新的點擊記錄
+    const newClick = {
+        date: utcToday,
+        referrer,
+        ipAddress,
+        userAgent: userAgentString,
+        os,
+        browser,
+        location: '' // 你可以使用第三方API來獲取基於IP的地理位置
+    };
+
+    // 計算設備類型
+    const deviceType = agent.device.toString().toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
+
+    // 查找並更新URL
+    const url = await Url.findOne({ shortUrl: shortId });
+    if (!url) {
+        console.error('URL not found');
+        return NextResponse.json({ error: 'URL not found' }, { status: HttpStatusEnum.NotFound });
+    }
+
+    // 確保 counts 字段是數組
+    if (!Array.isArray(url.counts)) {
+        console.error('url.counts is not an array, converting to array.');
+        if (url.counts && typeof url.counts === 'object') {
+            const newCounts: Count[] = [];
+            for (const type in url.counts) {
+                if (url.counts.hasOwnProperty(type)) {
+                    for (const value in url.counts[type]) {
+                        if (url.counts[type].hasOwnProperty(value)) {
+                            newCounts.push({
+                                type: type,
+                                value: value,
+                                count: url.counts[type][value]
+                            });
+                        }
                     }
                 }
             }
-        );
-    } else {
-        // 更新附加信息
-        await Url.updateOne(
-            { shortUrl: shortId, 'clicks.date': utcToday },
-            {
-                $set: {
-                    'clicks.$.referrer': referrer,
-                    'clicks.$.ipAddress': ipAddress,
-                    'clicks.$.userAgent': userAgent
-                }
-            }
-        );
+            url.counts = newCounts;
+        } else {
+            url.counts = [];
+        }
     }
 
-    return NextResponse.json({ message: 'Click tracked' }, { status: HttpStatusEnum.OK });
+    // 打印調試信息
+    console.log('Before updating counts:', url.counts);
+
+    // 更新點擊數和點擊記錄
+    url.clickCount += 1;
+    url.clicks.push(newClick);
+
+    // 更新計數數組
+    const updateCount = (type: string, value: string) => {
+        const countIndex = url.counts.findIndex((count: Count) => count.type === type && count.value === value);
+        if (countIndex >= 0) {
+            url.counts[countIndex].count += 1;
+        } else {
+            url.counts.push({ type, value, count: 1 });
+        }
+    };
+
+    updateCount('browser', browser);
+    updateCount('device', deviceType);
+    updateCount('location', 'unknown'); // 你可以根據實際情況更新這裡的地理位置
+
+    // 打印調試信息
+    console.log('After updating counts:', url.counts);
+
+    try {
+        await url.save();
+        console.log('Update successful:', url);
+        return NextResponse.json({ message: 'Click tracked' }, { status: HttpStatusEnum.OK });
+    } catch (error) {
+        console.error('Update failed:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: HttpStatusEnum.InternalServerError });
+    }
 }
