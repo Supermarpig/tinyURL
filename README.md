@@ -8,8 +8,10 @@ short-url-service/
 │   ├── api/
 │   │   ├── [shortId]/
 │   │   │   └── route.ts
-│   │   └── shorten/
-│   │       └── route.ts
+│   │   ├── shorten/
+│   │   │   └── route.ts
+│   │   ├── trackClick/
+│   │   │   └── route.ts
 │   ├── favicon.ico
 │   ├── globals.css
 │   ├── layout.tsx

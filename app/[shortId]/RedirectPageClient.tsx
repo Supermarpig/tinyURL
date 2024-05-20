@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Metadata {
@@ -13,14 +13,32 @@ interface Metadata {
 interface RedirectPageClientProps {
     metadata: Metadata;
     longUrl: string;
+    shortId: string;
 }
 
-export default function RedirectPageClient({ metadata, longUrl }: RedirectPageClientProps) {
+async function trackClick(shortId: string) {
+    const baseUrl = process.env.BASE_URL;
+    await fetch(`${baseUrl}/api/trackClick`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ shortId }),
+    });
+}
+
+export default function RedirectPageClient({  longUrl, shortId }: RedirectPageClientProps) {
     const router = useRouter();
+    const hasTracked = useRef(false);
 
     useEffect(() => {
-        router.replace(longUrl);
-    }, [longUrl, router]);
+        if (!hasTracked.current) {
+            hasTracked.current = true; 
+            trackClick(shortId).then(() => {
+                router.replace(longUrl);
+            });
+        }
+    }, [shortId, longUrl, router]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">

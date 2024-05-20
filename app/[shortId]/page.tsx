@@ -68,6 +68,6 @@ export default async function Page({ params }: RedirectPageProps) {
     }
 
     return (
-        <RedirectPageClient metadata={data.metadata} longUrl={data.longUrl} />
+        <RedirectPageClient metadata={data.metadata} longUrl={data.longUrl} shortId={shortId} />
     );
 }
