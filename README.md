@@ -2,26 +2,37 @@
 
 ## 資料夾結構
 
-```BASH
+```bash
 short-url-service/
 ├── app/
 │   ├── api/
 │   │   ├── [shortId]/
-│   │   │   └── route.ts
+│   │   │   ├── route.ts
+│   │   │   ├── update.ts
+│   │   ├── redirect/
+│   │   │   ├── [shortId]/
+│   │   │   │   └── route.ts
 │   │   ├── shorten/
 │   │   │   └── route.ts
+│   │   ├── test/
+│   │   │   └── [shortId]/
+│   │   │       └── route.ts
 │   │   ├── trackClick/
 │   │   │   └── route.ts
 │   ├── favicon.ico
 │   ├── globals.css
 │   ├── layout.tsx
-│   └── page.tsx
+│   ├── page.tsx
+├── components/
+│   ├── ui/
+│   │   ├── InfoDialog.tsx
+│   │   ├── LoadingSpinner.tsx
 ├── lib/
 │   └── mongodb.ts
 ├── models/
 │   └── Url.ts
 ├── utils/
-│   └── httpStatusEnum.ts
+│   ├── httpStatusEnum.ts
 ├── public/
 ├── .env.local
 ├── .eslintrc.json
@@ -33,6 +44,7 @@ short-url-service/
 ├── README.md
 ├── tailwind.config.ts
 └── tsconfig.json
+
 ```
 
 ## API 路由
@@ -40,29 +52,10 @@ short-url-service/
 POST /api/shorten
 此路由用來縮短給定的 URL。
 
-```JSON
-
-{
-  "originalUrl": "<https://example.com>"
-}
-```
-
-回應：
-
-```JSON
-
-{
-  "shortUrl": "<http://localhost:3000/abcdef>"
-}
-```
-
-GET /api/[shortId]
-此路由用來重定向到對應短 ID 的原始 URL。
-
 ## 環境變數
 
 MONGODB_URI - 用於連接到 MongoDB 資料庫的 URI。
 
 ## 授權條款
 
-此專案使用 MIT 授權條款。
+此專案使用 MIT 授權條款

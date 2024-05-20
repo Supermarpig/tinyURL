@@ -26,6 +26,11 @@ export async function POST(request: Request) {
     // 將當地時間轉換為UTC時間
     const utcToday = new Date(localToday.getTime() - localToday.getTimezoneOffset() * 60000);
 
+    const headers = request.headers;
+    const referrer = headers.get('referer') || '';
+    const ipAddress = headers.get('x-forwarded-for')?.split(',')[0].trim() || '';
+    const userAgent = headers.get('user-agent') || '';
+
     // 使用 MongoDB 的原子操作來更新計數
     const result = await Url.findOneAndUpdate(
         { shortUrl: shortId, 'clicks.date': utcToday },
@@ -37,7 +42,30 @@ export async function POST(request: Request) {
         // 如果沒有匹配的文檔，插入新的點選記錄
         await Url.updateOne(
             { shortUrl: shortId },
-            { $push: { clicks: { date: utcToday, count: 1 } } }
+            {
+                $push: {
+                    clicks: {
+                        date: utcToday,
+                        count: 1,
+                        referrer,
+                        ipAddress,
+                        userAgent,
+                        location: '' // 可以使用第三方API來獲取基於IP的地理位置
+                    }
+                }
+            }
+        );
+    } else {
+        // 更新附加信息
+        await Url.updateOne(
+            { shortUrl: shortId, 'clicks.date': utcToday },
+            {
+                $set: {
+                    'clicks.$.referrer': referrer,
+                    'clicks.$.ipAddress': ipAddress,
+                    'clicks.$.userAgent': userAgent
+                }
+            }
         );
     }
 
