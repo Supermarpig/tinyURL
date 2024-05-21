@@ -27,13 +27,13 @@ async function trackClick(shortId: string) {
     });
 }
 
-export default function RedirectPageClient({  longUrl, shortId }: RedirectPageClientProps) {
+export default function RedirectPageClient({ longUrl, shortId }: RedirectPageClientProps) {
     const router = useRouter();
     const hasTracked = useRef(false);
 
     useEffect(() => {
         if (!hasTracked.current) {
-            hasTracked.current = true; 
+            hasTracked.current = true;
             trackClick(shortId).then(() => {
                 router.replace(longUrl);
             });
@@ -41,10 +41,10 @@ export default function RedirectPageClient({  longUrl, shortId }: RedirectPageCl
     }, [shortId, longUrl, router]);
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="flex flex-col items-center">
-                <div className="loader animate-spin rounded-full h-32 w-32 border-t-4 border-blue-500 mb-4"></div>
-                <p className="text-xl text-gray-700">Redirecting...</p>
+        <div className="flex items-center justify-center min-h-screen bg-pixel-pattern">
+            <div className="flex flex-col items-center pixel-art-border p-8 bg-white">
+                <div className="loader animate-spin rounded-full h-32 w-32 border-t-4 border-pixel-green mb-4"></div>
+                <p className="text-xl text-gray-700 pixel-art-font">Redirecting...</p>
             </div>
         </div>
     );

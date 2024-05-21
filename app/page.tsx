@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
 import InfoDialog from '@/components/InfoDialog';
+import { CheckCircle, Clipboard } from 'lucide-react';
 
 const schema = z.object({
   longUrl: z.string().url('Invalid URL format').nonempty('URL is required'),
@@ -24,6 +25,7 @@ export default function Home() {
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [copied, setCopied] = useState<boolean>(false);
 
   const { register, handleSubmit, formState: { errors }, trigger } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -71,41 +73,48 @@ export default function Home() {
     setImageUrl(data.imageUrl);
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-green-500 p-8">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-xl">
-        <h1 className="text-2xl font-bold mb-4 text-blue-600 text-center">Short URL Service</h1>
+    <div className="flex items-center justify-center min-h-screen bg-pixel-pattern p-8">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-xl pixel-art-border">
+        <h1 className="text-2xl font-bold mb-4 text-pixel-red text-center pixel-art-font">Short URL Service</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="mb-4 flex flex-col items-center">
           <div className="mb-4 w-full">
-            <span className="text-gray-700 font-semibold">URL:</span>
+            <span className="text-gray-700 font-semibold pixel-art-font">URL:</span>
             <input
               type="url"
               {...register('longUrl', { onBlur: () => trigger('longUrl') })}
               placeholder="Enter your URL"
-              className="w-full border p-2 text-gray-600 rounded-md bg-gray-100"
+              className="w-full border p-2 text-gray-600 rounded-md bg-gray-100 pixel-art-input"
               required
             />
-            {errors.longUrl && <p className="text-red-500">{errors.longUrl.message}</p>}
+            {errors.longUrl && <p className="text-pixel-red">{errors.longUrl.message}</p>}
           </div>
           {title && (
             <div className="mb-4 w-full">
-              <span className="text-gray-700 font-semibold">Title:</span>
-              <div className="border p-2 text-gray-600 rounded-md bg-gray-100">{title}</div>
+              <span className="text-gray-700 font-semibold pixel-art-font">Title:</span>
+              <div className="border p-2 text-gray-600 rounded-md bg-gray-100 pixel-art-input">{title}</div>
             </div>
           )}
           {description && (
             <div className="mb-4 w-full">
-              <span className="text-gray-700 font-semibold">Description:</span>
-              <div className="border p-2 text-gray-600 rounded-md bg-gray-100">{description}</div>
+              <span className="text-gray-700 font-semibold pixel-art-font">Description:</span>
+              <div className="border p-2 text-gray-600 rounded-md bg-gray-100 pixel-art-input">{description}</div>
             </div>
           )}
           {imageUrl && (
             <div className="mb-4 w-full">
-              <span className="text-gray-700 font-semibold">Image URL:</span>
-              <div className="border p-2 text-gray-600 rounded-md bg-gray-100 overflow-hidden text-ellipsis whitespace-nowrap">{imageUrl}</div>
+              <span className="text-gray-700 font-semibold pixel-art-font">Image URL:</span>
+              <div className="border p-2 text-gray-600 rounded-md bg-gray-100 overflow-hidden text-ellipsis whitespace-nowrap pixel-art-input">{imageUrl}</div>
             </div>
           )}
-          <Button type="submit" className="bg-green-500 text-white p-2 rounded w-full flex items-center justify-center">
+          <Button type="submit" className="bg-pixel-green text-white p-2 rounded w-full flex items-center justify-center pixel-art-button">
             Shorten {loading && <LoadingSpinner />}
           </Button>
         </form>
@@ -113,10 +122,19 @@ export default function Home() {
         <InfoDialog onSubmit={handleMoreInfoSubmit} initialValues={{ title, description, imageUrl }} />
 
         {shortUrl && (
-          <div className="flex items-center justify-end">
-            <a href={shortUrl} className="text-green-600 underline font-bold">{shortUrl}</a>
+          <div className="flex flex-col items-center mt-4 pixel-art-url-container">
+            <span className="text-gray-700 font-semibold pixel-art-font">Your shortened URL:</span>
+            <div className="flex items-center mt-2">
+              <a href={shortUrl} className="text-pixel-green font-bold pixel-art-font bg-gray-100 border border-black p-4 rounded-md">
+                {shortUrl}
+              </a>
+              <button onClick={handleCopy} className="ml-2 p-2 bg-gray-100 border border-black rounded-md pixel-art-button">
+                {copied ? <CheckCircle className="h-6 w-6" /> : <Clipboard className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         )}
+
       </div>
       <Toaster />
     </div>

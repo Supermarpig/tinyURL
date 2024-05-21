@@ -109,7 +109,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
                             type="text"
                             {...register("title")}
                             placeholder="Title"
-                            className="border p-2 rounded w-full"
+                            className="border p-2 rounded w-full bg-gray-100 pixel-art-input"
                             onBlur={() => trigger("title")}
                         />
                         {errors.title && <p className="text-red-600">{errors.title.message}</p>}
@@ -118,7 +118,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
                         <textarea
                             {...register("description")}
                             placeholder="Description"
-                            className="border p-2 rounded w-full"
+                            className="border p-2 rounded w-full bg-gray-100 pixel-art-input"
                             onBlur={() => trigger("description")}
                         />
                         {errors.description && <p className="text-red-600">{errors.description.message}</p>}
@@ -128,7 +128,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
                             type="url"
                             {...register("imageUrl")}
                             placeholder="Image URL"
-                            className="border p-2 rounded w-full"
+                            className="border p-2 rounded w-full bg-gray-100 pixel-art-input"
                             onBlur={() => trigger("imageUrl")}
                         />
                         {errors.imageUrl && <p className="text-red-600">{errors.imageUrl.message}</p>}
