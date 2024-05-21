@@ -77,9 +77,6 @@ const config = {
       fontFamily: {
         'pixel-art': ['"Press Start 2P"', 'cursive'],
       },
-      backgroundImage: {
-        'pixel-pattern': "url('/path/to/pixel-pattern.png')",
-      },
       borderWidth: {
         'pixel-art': '4px',
       },

@@ -8,7 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { Button } from "@/components/ui/button";
 import { Toaster, toast } from "sonner";
 import InfoDialog from '@/components/InfoDialog';
-import { CheckCircle, Clipboard } from 'lucide-react';
+import ShortUrlDisplay from '@/components/ShortUrlDisplay ';
 
 const schema = z.object({
   longUrl: z.string().url('Invalid URL format').nonempty('URL is required'),
@@ -73,15 +73,8 @@ export default function Home() {
     setImageUrl(data.imageUrl);
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shortUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-pixel-pattern p-8">
+    <div className="flex items-center justify-center min-h-screen p-8">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-xl pixel-art-border">
         <h1 className="text-2xl font-bold mb-4 text-pixel-red text-center pixel-art-font">Short URL Service</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="mb-4 flex flex-col items-center">
@@ -122,17 +115,7 @@ export default function Home() {
         <InfoDialog onSubmit={handleMoreInfoSubmit} initialValues={{ title, description, imageUrl }} />
 
         {shortUrl && (
-          <div className="flex flex-col items-center mt-4 pixel-art-url-container">
-            <span className="text-gray-700 font-semibold pixel-art-font">Your shortened URL:</span>
-            <div className="flex items-center mt-2">
-              <a href={shortUrl} className="text-pixel-green font-bold pixel-art-font bg-gray-100 border border-black p-4 rounded-md">
-                {shortUrl}
-              </a>
-              <button onClick={handleCopy} className="ml-2 p-2 bg-gray-100 border border-black rounded-md pixel-art-button">
-                {copied ? <CheckCircle className="h-6 w-6" /> : <Clipboard className="h-6 w-6" />}
-              </button>
-            </div>
-          </div>
+          <ShortUrlDisplay shortUrl={shortUrl} />
         )}
 
       </div>
