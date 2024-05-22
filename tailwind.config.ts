@@ -75,7 +75,7 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        'pixel-art': ['"Press Start 2P"', 'cursive'],
+        pixel: ['Pixel Emulator', 'sans-serif'],
       },
       borderWidth: {
         'pixel-art': '4px',

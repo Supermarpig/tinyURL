@@ -1,6 +1,8 @@
 @font-face {
-  font-family: 'PixelEmulator';
+  font-family: 'Pixel Emulator';
   src: url('/fonts/PixelEmulator.otf') format('opentype');
+  /* font-weight: normal;
+  font-style: normal; */
 }
 
 @tailwind base;
@@ -78,6 +80,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Pixel Emulator', sans-serif;
   }
 }
 
@@ -87,7 +90,7 @@
 }
 
 .pixel-art-font {
-  font-family: 'Press Start 2P', cursive;
+  /* font-family: 'Press Start 2P', cursive; */
   color: #000;
 }
 

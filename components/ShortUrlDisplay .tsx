@@ -42,16 +42,18 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
         shortUrl && (
             <div className="flex flex-col items-center mt-4 pixel-art-url-container">
                 <span className="text-gray-700 font-semibold pixel-art-font">Your shortened URL:</span>
-                <div className="flex items-center mt-2">
-                    <a href={shortUrl} className="text-pixel-green font-bold pixel-art-font bg-gray-100 border border-black p-4 rounded-md">
+                <div className="flex items-center mt-2 w-full flex-col">
+                    <a href={shortUrl} className="text-pixel-green font-bold pixel-art-font bg-gray-100 border border-black p-4 rounded-md truncate w-full">
                         {shortUrl}
                     </a>
-                    <button onClick={handleCopy} className="ml-2 p-2 bg-gray-100 border border-black rounded-md pixel-art-button">
-                        {copied ? <CheckCircle className="h-6 w-6" /> : <Clipboard className="h-6 w-6" />}
-                    </button>
-                    <button onClick={handleShowClicks} className="ml-2 p-2 bg-gray-100 border border-black rounded-md pixel-art-button">
-                        <Eye className="h-6 w-6" />
-                    </button>
+                    <div className='flex gap-4 mt-4'>
+                        <button onClick={handleCopy} className="ml-2 p-2 bg-gray-100 border border-black rounded-md pixel-art-button">
+                            {copied ? <CheckCircle className="h-6 w-6" /> : <Clipboard className="h-6 w-6" />}
+                        </button>
+                        <button onClick={handleShowClicks} className="ml-2 p-2 bg-gray-100 border border-black rounded-md pixel-art-button">
+                            <Eye className="h-6 w-6" />
+                        </button>
+                    </div>
                 </div>
                 {clickCount !== null && createdAt && (
                     <div className="mt-2 text-gray-700 pixel-art-font">

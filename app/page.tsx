@@ -84,7 +84,7 @@ export default function Home() {
               type="url"
               {...register('longUrl', { onBlur: () => trigger('longUrl') })}
               placeholder="Enter your URL"
-              className="w-full border p-2 text-gray-600 rounded-md bg-gray-100 pixel-art-input"
+              className="w-full border p-2 text-gray-600 rounded-md bg-gray-100 pixel-art-input truncate"
               required
             />
             {errors.longUrl && <p className="text-pixel-red">{errors.longUrl.message}</p>}
