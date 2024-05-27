@@ -60,7 +60,12 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
         setImageError(null);
         if (data.imageUrl) {
             try {
-                const response = await fetch(data.imageUrl);
+                const response = await fetch(data.imageUrl, {
+                    redirect: 'follow'
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const blob = await response.blob();
                 if (blob.size > 5 * 1024 * 1024) {
                     throw new Error("Image file size exceeds 5MB");
@@ -81,7 +86,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
         setIsOpen(false);
     };
 
-    // 當初始值變化時重置錶單
+    // 當初始值變化時重置表單
     useEffect(() => {
         reset(initialValues);
     }, [initialValues, reset]);
