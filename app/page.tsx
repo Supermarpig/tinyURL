@@ -107,12 +107,12 @@ export default function Home() {
               <div className="border p-2 text-gray-600 rounded-md bg-gray-100 overflow-hidden text-ellipsis whitespace-nowrap pixel-art-input">{imageUrl}</div>
             </div>
           )}
-          <Button type="submit" className="bg-pixel-green text-white p-2 rounded w-full flex items-center justify-center pixel-art-button">
+          <InfoDialog onSubmit={handleMoreInfoSubmit} initialValues={{ title, description, imageUrl }} />
+          <Button type="submit" className="bg-pixel-green text-white p-2 mt-4 rounded w-full flex items-center justify-center pixel-art-button">
             Shorten {loading && <LoadingSpinner />}
           </Button>
         </form>
 
-        <InfoDialog onSubmit={handleMoreInfoSubmit} initialValues={{ title, description, imageUrl }} />
 
         {shortUrl && (
           <ShortUrlDisplay shortUrl={shortUrl} />

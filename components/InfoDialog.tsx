@@ -96,7 +96,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="mt-2">Add More Info</Button>
+                <Button variant="default" className="mt-4 mb-4 w-full rounded">Add More Info</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
