@@ -109,7 +109,7 @@ export default function Home() {
             </div>
           )}
           <InfoDialog onSubmit={handleMoreInfoSubmit} initialValues={{ title, description, imageUrl }} />
-          <Button type="submit" className="bg-pixel-green text-white p-2 mt-4 rounded w-full flex items-center justify-center pixel-art-button">
+          <Button type="submit" className="bg-pixel-green p-2 mt-4 w-full flex items-center justify-center pixel-art-button">
             Shorten {loading && <LoadingSpinner />}
           </Button>
         </form>

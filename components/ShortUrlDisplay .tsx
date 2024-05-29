@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, Clipboard, Eye } from 'lucide-react';
+import TinyUrlMoreInfo from '@/components/TinyUrlMoreInfo'
+import {  toast } from "sonner";
 
 interface ShortUrlDisplayProps {
     shortUrl: string;
@@ -18,6 +20,7 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         });
+        toast("Copy successful👍👍👍")
     };
 
     const handleShowClicks = async () => {
@@ -37,6 +40,8 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
             console.error('Error fetching click count:', data.error);
         }
     };
+
+    if(!shortId) return
 
     return (
         shortUrl && (
@@ -58,7 +63,9 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
                 {clickCount !== null && createdAt && (
                     <div className="mt-2 text-gray-700 pixel-art-font">
                         From <span className="text-lg font-bold">{new Date(createdAt).toLocaleDateString()}</span> to today, there have been <span className="text-lg font-bold">{clickCount}</span> clicks💕💕💕!
+                        <TinyUrlMoreInfo shortUrl={shortUrl}/>
                     </div>
+                    
                 )}
             </div>
         )
