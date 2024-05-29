@@ -140,7 +140,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
                         {imageError && <p className="text-red-600">{imageError}</p>}
                     </div>
                     <DialogFooter>
-                        <Button type="submit">Submit</Button>
+                        <Button type="submit">Done</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

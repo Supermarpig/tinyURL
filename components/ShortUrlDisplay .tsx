@@ -20,7 +20,7 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         });
-        toast("Copy successful👍👍👍")
+        toast("Copy successful🥳🙌🌟")
     };
 
     const handleShowClicks = async () => {
@@ -36,6 +36,7 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
         if (response.ok) {
             setClickCount(data.clickCount);
             setCreatedAt(data.createdAt);
+            toast("Success! More detailed information acquired! 🎉📈🙌")
         } else {
             console.error('Error fetching click count:', data.error);
         }

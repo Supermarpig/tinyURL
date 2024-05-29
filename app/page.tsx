@@ -52,6 +52,7 @@ export default function Home() {
       if (res.ok) {
         const result = await res.json();
         setShortUrl(result.shortUrl);
+        toast("Shorten Successful🚀✨👏")
       } else {
         const result = await res.json();
         toast.error(result.error || 'Failed to shorten URL', {
