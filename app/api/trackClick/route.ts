@@ -3,6 +3,8 @@ import dbConnect from '@/lib/mongodb';
 import Url, { Count } from '@/models/Url';
 import { HttpStatusEnum } from '@/utils/httpStatusEnum';
 import useragent from 'useragent';
+import maxmind from 'maxmind';
+import path from 'path';
 
 export async function POST(request: Request) {
     let body;
@@ -37,6 +39,26 @@ export async function POST(request: Request) {
     const agent = useragent.parse(userAgentString);
     const os = agent.os.toString();
     const browser = agent.toAgent();
+    
+    // 使用 MaxMind GeoLite2 數據庫獲取地理位置
+    let location = 'unknown';
+    try {
+        const dbPath = path.join(process.cwd(), 'lib', 'GeoLite2-City.mmdb'); // 確保這個路徑是正確的
+        const lookup = await maxmind.open(dbPath);
+        const geo = lookup.get(ipAddress);
+
+        if (geo) {
+            if ('city' in geo && geo.city?.names?.en) {
+                location = geo.city.names.en;
+            } else if ('country' in geo && geo.country?.names?.en) {
+                location = geo.country.names.en;
+            } else {
+                location = 'unknown';
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching location:', error);
+    }
 
     // 新的點擊記錄
     const newClick = {
@@ -46,7 +68,7 @@ export async function POST(request: Request) {
         userAgent: userAgentString,
         os,
         browser,
-        location: '' // 你可以使用第三方API來獲取基於IP的地理位置
+        location // 使用從 GeoLite2 獲取的地理位置
     };
 
     // 計算設備類型
@@ -102,7 +124,7 @@ export async function POST(request: Request) {
 
     updateCount('browser', browser);
     updateCount('device', deviceType);
-    updateCount('location', 'unknown'); // 你可以根據實際情況更新這裡的地理位置
+    updateCount('location', location);
 
     // 打印調試信息
     console.log('After updating counts:', url.counts);
