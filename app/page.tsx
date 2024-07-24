@@ -11,8 +11,16 @@ import InfoDialog from '@/components/InfoDialog';
 import ShortUrlDisplay from '@/components/ShortUrlDisplay ';
 // import log from '@/utils/log';
 
+const urlPattern = new RegExp(
+  /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}(\/.*)?$/i
+);
+
 const schema = z.object({
-  longUrl: z.string().url('Invalid URL format').nonempty('URL is required'),
+  longUrl: z.string()
+    .nonempty('URL is required')
+    .refine((url) => urlPattern.test(url), {
+      message: 'Invalid URL format'
+    }),
   title: z.string().optional(),
   description: z.string().optional(),
   imageUrl: z.string().optional()
