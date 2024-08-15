@@ -6,3 +6,4 @@ export * from './PDFIcon';
 export * from './PPTIcon';
 export * from './TXTIcon';
 export * from './WordIcon';
+export * from './HelpSquareIcon';

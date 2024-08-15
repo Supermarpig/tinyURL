@@ -1,8 +1,8 @@
 'use client'
 
-import { DeleteIcon, PDFIcon, ExcelIcon, WordIcon, PPTIcon, TXTIcon, AudioIcon } from '@/icons';
+import Image from 'next/image';
+import { DeleteIcon, PDFIcon, ExcelIcon, WordIcon, PPTIcon, TXTIcon, AudioIcon, HelpSquareIcon } from '@/icons';
 import { useEffect, useState } from 'react';
-import Image from 'next/image'
 
 interface FileAreaProps {
     file: File;
@@ -31,7 +31,7 @@ const FileArea: React.FC<FileAreaProps> = ({
     const [IconComponent, setIconComponent] = useState<React.FC | null>(null);
 
     useEffect(() => {
-        console.log(file.type, "======file.type")
+        // console.log(file.type, "======file.type")
         if (file && file.type.startsWith('image/')) {
             const objectUrl = URL.createObjectURL(file);
             setPreviewUrl(objectUrl);
@@ -59,10 +59,10 @@ const FileArea: React.FC<FileAreaProps> = ({
             } else if (file.type.startsWith('audio/')) {
                 icon = AudioIcon;
             } else {
-                icon = DeleteIcon; // 預設為某個圖標，例如 DeleteIcon 或其他通用圖標
+                icon = HelpSquareIcon; 
             }
 
-            setIconComponent(() => icon); // 動態設置圖標組件
+            setIconComponent(() => icon); 
         }
     }, [file]);
 
@@ -73,20 +73,16 @@ const FileArea: React.FC<FileAreaProps> = ({
     return (
         <div key={index} className="mb-4">
             <div className="flex items-center relative">
-                {/* 刪除按鈕 */}
-                <button onClick={deleteFile}>
-                    <DeleteIcon />
-                </button>
                 {/* 文件名 */}
                 <div
-                    className="w-1/4 pixel-art-border mr-4 flex flex-col items-start p-2 ml-4 relative"
+                    className="w-1/4 pixel-art-border mr-4 flex flex-col items-start p-2 relative"
                     onMouseEnter={shouldShowTooltip(file.name) ? showTooltip : undefined}
                     onMouseLeave={hideTooltip}
                 >
                     <div className="flex items-center w-full">
                         <div className='w-16 '>
                             {previewUrl ? (
-                                <img src={previewUrl} alt={file.name} />
+                                <Image src={previewUrl} alt={file.name} layout="intrinsic" width={500} height={500} />
                             ) : (
                                 IconComponent && <IconComponent />
 
@@ -109,6 +105,10 @@ const FileArea: React.FC<FileAreaProps> = ({
                 <div className="w-full h-12 pixel-art-border flex items-center justify-center">
                     <p className="pixel-art-font text-lg">{progress}%</p>
                 </div>
+                {/* 刪除按鈕 */}
+                <button onClick={deleteFile} className='ml-4 w-10'>
+                    <DeleteIcon />
+                </button>
             </div>
         </div>
     );

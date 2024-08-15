@@ -1,8 +1,9 @@
 'use client'
-import { useState, ChangeEvent, useRef, useEffect } from 'react';
+import { useState, ChangeEvent, useRef, useEffect, DragEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { CloudUploadIcon } from '@/icons/CloudUploadIcon'
 import FileArea from '@/components/fileUpload/FileArea';
+import { formatFileSize } from '@/utils/fileSize'
 
 const FileUpload = () => {
     const [files, setFiles] = useState<File[]>([]);
@@ -11,15 +12,22 @@ const FileUpload = () => {
     const [tooltipTimer, setTooltipTimer] = useState<NodeJS.Timeout | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
+    const handleFileChange = (e: ChangeEvent<HTMLInputElement> | DragEvent<HTMLDivElement>) => {
+        let selectedFiles: File[] = [];
+
+        if ('dataTransfer' in e) {
+            // 處理拖曳事件
+            selectedFiles = Array.from(e.dataTransfer.files);
+        } else if (e.target.files) {
+            // 處理文件選擇器
+            selectedFiles = Array.from(e.target.files);
+        }
+
         setFiles([...files, ...selectedFiles]);
         setProgresses(prevProgresses => [
             ...prevProgresses,
             ...new Array(selectedFiles.length).fill(0)
         ]);
-
-        console.log(e.target.files, "=========e.target.files")
     };
 
     const deleteFile = (index: number) => {
@@ -27,6 +35,8 @@ const FileUpload = () => {
         setProgresses(prevProgresses => prevProgresses.filter((_, i) => i !== index));
     };
 
+
+    // 後端 api上傳
     const handleUpload = async () => {
         if (files.length === 0) return;
 
@@ -77,11 +87,25 @@ const FileUpload = () => {
         }
     };
 
+    // 計算檔案大小
+    const totalFileSize = files.reduce((total, file) => total + file.size, 0);
+
+    const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault(); // 防止瀏覽器預設行為
+    };
+
+    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault(); // 防止瀏覽器預設行為
+        handleFileChange(event); // 處理文件拖曳
+    };
+
+
     return (
         <div className="min-h-screen p-4">
             <div className="container mx-auto">
                 {/* 文件上傳部分 */}
-                <div className="pixel-art-border h-64 flex flex-col items-center justify-center ">
+                <div className="pixel-art-border h-64 flex flex-col items-center justify-center " onDragOver={handleDragOver}
+                    onDrop={handleDrop}>
                     <input
                         type="file"
                         onChange={handleFileChange}
@@ -95,19 +119,10 @@ const FileUpload = () => {
                     </div>
                 </div>
                 {/* 上傳至後端api 然後寫進資料庫 */}
-                <div className='flex items-center justify-center my-8'>
-                    {/* 統計檔案數量 跟大小 */}
-                    <div>
-
-                    </div>
-                    <Button
-                        variant="destructive"
-                        onClick={handleUpload}
-                    >
-                        上傳檔案
-                    </Button>
+                <div className='my-4 flex items-center justify-end'>
+                    <span>{`已新增檔案： ${files.length} 個 / 總檔案大小： ${formatFileSize(totalFileSize)}`}</span>
                 </div>
-                {/* 進度部分 */}
+                {/* 檔案區塊 */}
                 {files.map((file, index) => (
                     <FileArea
                         key={index}
@@ -120,6 +135,16 @@ const FileUpload = () => {
                         tooltipVisible={tooltipIndex === index}
                     />
                 ))}
+                <div className='flex items-center justify-center my-8'>
+                    {/* 統計檔案數量 跟大小 */}
+                    <Button
+                        variant="destructive"
+                        onClick={handleUpload}
+
+                    >
+                        上傳檔案
+                    </Button>
+                </div>
             </div>
         </div>
     );
