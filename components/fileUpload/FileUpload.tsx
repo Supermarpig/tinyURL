@@ -1,17 +1,30 @@
 'use client'
-import React, { useState, ChangeEvent, useRef, useEffect } from 'react';
+import { useState, ChangeEvent, useRef, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { CloudUploadIcon } from '@/icons/CloudUploadIcon'
+import FileArea from '@/components/fileUpload/FileArea';
 
-const FileUpload: React.FC = () => {
+const FileUpload = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [progresses, setProgresses] = useState<number[]>([]);
     const [tooltipIndex, setTooltipIndex] = useState<number | null>(null);
     const [tooltipTimer, setTooltipTimer] = useState<NodeJS.Timeout | null>(null);
-
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
-        setFiles(selectedFiles);
-        setProgresses(new Array(selectedFiles.length).fill(0));
+        setFiles([...files, ...selectedFiles]);
+        setProgresses(prevProgresses => [
+            ...prevProgresses,
+            ...new Array(selectedFiles.length).fill(0)
+        ]);
+
+        console.log(e.target.files, "=========e.target.files")
+    };
+
+    const deleteFile = (index: number) => {
+        setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+        setProgresses(prevProgresses => prevProgresses.filter((_, i) => i !== index));
     };
 
     const handleUpload = async () => {
@@ -58,56 +71,55 @@ const FileUpload: React.FC = () => {
         };
     }, [tooltipTimer]);
 
-    const shouldShowTooltip = (fileName: string) => {
-        return fileName.length > 20; // 如果文件名長度超過 20 個字符，則顯示 tooltip
+    const triggerFileInput = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
     };
 
     return (
         <div className="min-h-screen p-4">
             <div className="container mx-auto">
                 {/* 文件上傳部分 */}
-                <div className="pixel-art-border h-64 flex flex-col items-center justify-center mb-8">
+                <div className="pixel-art-border h-64 flex flex-col items-center justify-center ">
                     <input
                         type="file"
                         onChange={handleFileChange}
-                        className="pixel-art-input mb-4"
+                        ref={fileInputRef}
+                        className="hidden"
                         multiple
                     />
-                    <button
+                    <div onClick={triggerFileInput} className="cursor-pointer w-full h-full flex flex-col items-center justify-center gap-4">
+                        <CloudUploadIcon />
+                        <span>點擊新增或拖曳檔案到此區塊</span>
+                    </div>
+                </div>
+                {/* 上傳至後端api 然後寫進資料庫 */}
+                <div className='flex items-center justify-center my-8'>
+                    {/* 統計檔案數量 跟大小 */}
+                    <div>
+
+                    </div>
+                    <Button
+                        variant="destructive"
                         onClick={handleUpload}
-                        className="pixel-art-button px-4 py-2"
                     >
                         上傳檔案
-                    </button>
+                    </Button>
                 </div>
-
                 {/* 進度部分 */}
-                <div className="pixel-art-border p-4">
-                    {files.map((file, index) => (
-                        <div key={index} className="mb-4">
-                            <div className="flex items-center relative">
-                                {/* 文件名 */}
-                                <div
-                                    className="w-64 h-12 pixel-art-border mr-4 flex items-center px-4 truncate"
-                                    onMouseEnter={() => shouldShowTooltip(file.name) && showTooltip(index)}
-                                    onMouseLeave={hideTooltip}
-                                >
-                                    <span className="truncate">{file.name}</span>
-                                    {/* Tooltip */}
-                                    {tooltipIndex === index && shouldShowTooltip(file.name) && (
-                                        <div className="absolute left-0 bottom-full mb-2 flex items-center justify-start p-2 bg-gray-800 text-white text-lg rounded w-max">
-                                            {file.name}
-                                        </div>
-                                    )}
-                                </div>
-                                {/* 進度部分 */}
-                                <div className="w-full h-12 pixel-art-border flex items-center justify-center">
-                                    <p className="pixel-art-font text-lg">{progresses[index]}%</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {files.map((file, index) => (
+                    <FileArea
+                        key={index}
+                        file={file}
+                        index={index}
+                        progress={progresses[index]}
+                        deleteFile={() => deleteFile(index)}
+                        showTooltip={() => showTooltip(index)}
+                        hideTooltip={hideTooltip}
+                        tooltipVisible={tooltipIndex === index}
+                    />
+                ))}
             </div>
         </div>
     );
