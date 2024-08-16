@@ -10,7 +10,9 @@ const FileUpload = () => {
     const [progresses, setProgresses] = useState<number[]>([]);
     const [tooltipIndex, setTooltipIndex] = useState<number | null>(null);
     const [tooltipTimer, setTooltipTimer] = useState<NodeJS.Timeout | null>(null);
+    const [isDragOver, setIsDragOver] = useState(false); // 新增狀態來跟蹤拖曳行為
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement> | DragEvent<HTMLDivElement>) => {
         let selectedFiles: File[] = [];
@@ -92,10 +94,15 @@ const FileUpload = () => {
 
     const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
         event.preventDefault(); // 防止瀏覽器預設行為
+        setIsDragOver(true);
     };
 
+    const handleDragLeave = () => {
+        setIsDragOver(false); // 當拖曳離開時，恢復為 false
+    };
     const handleDrop = (event: DragEvent<HTMLDivElement>) => {
         event.preventDefault(); // 防止瀏覽器預設行為
+        setIsDragOver(false);
         handleFileChange(event); // 處理文件拖曳
     };
 
@@ -104,8 +111,13 @@ const FileUpload = () => {
         <div className="min-h-screen p-4">
             <div className="container mx-auto">
                 {/* 文件上傳部分 */}
-                <div className="pixel-art-border h-64 flex flex-col items-center justify-center " onDragOver={handleDragOver}
-                    onDrop={handleDrop}>
+                <div
+                    className={`h-64 flex flex-col items-center justify-center transition-all duration-300 ease-in-out 
+                         ${isDragOver ? 'border-dance' : 'pixel-art-border border-black'}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                >
                     <input
                         type="file"
                         onChange={handleFileChange}
@@ -120,7 +132,10 @@ const FileUpload = () => {
                 </div>
                 {/* 上傳至後端api 然後寫進資料庫 */}
                 <div className='my-4 flex items-center justify-end'>
-                    <span>{`已新增檔案： ${files.length} 個 / 總檔案大小： ${formatFileSize(totalFileSize)}`}</span>
+                    <span>已新增檔案：</span>
+                    <span className='text-blue-500 mx-4'>{files.length}</span>
+                    <span>個 / 總檔案大小：</span>
+                    <span className='text-blue-500'>{formatFileSize(totalFileSize)}</span>
                 </div>
                 {/* 檔案區塊 */}
                 {files.map((file, index) => (
@@ -133,6 +148,7 @@ const FileUpload = () => {
                         showTooltip={() => showTooltip(index)}
                         hideTooltip={hideTooltip}
                         tooltipVisible={tooltipIndex === index}
+                        fileSize={file.size}
                     />
                 ))}
                 <div className='flex items-center justify-center my-8'>

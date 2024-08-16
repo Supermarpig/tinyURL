@@ -89,8 +89,29 @@
   box-shadow: 4px 4px #000;
 }
 
+.border-dance {
+  background: linear-gradient(90deg, #528452 50%, transparent 50%),
+    linear-gradient(90deg, #528452 50%, transparent 50%),
+    linear-gradient(0deg, #528452 50%, transparent 50%),
+    linear-gradient(0deg, #528452 50%, transparent 50%);
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  background-size: 40px 4px , 40px 4px , 4px 15px, 4px 15px;
+  background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%;
+  padding: 10px;
+  animation: border-dance 4s infinite linear;
+}
+
+@keyframes border-dance {
+  0% {
+    background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%;
+  }
+
+  100% {
+    background-position: 100% 0%, 0% 100%, 0% 0%, 100% 100%;
+  }
+}
+
 .pixel-art-font {
-  /* font-family: 'Press Start 2P', cursive; */
   color: #000;
 }
 

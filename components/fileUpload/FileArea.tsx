@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { DeleteIcon, PDFIcon, ExcelIcon, WordIcon, PPTIcon, TXTIcon, AudioIcon, HelpSquareIcon } from '@/icons';
 import { useEffect, useState } from 'react';
+import { formatFileSize } from '@/utils/fileSize'
 
 interface FileAreaProps {
     file: File;
@@ -12,6 +13,7 @@ interface FileAreaProps {
     showTooltip: () => void;
     hideTooltip: () => void;
     tooltipVisible: boolean;
+    fileSize: number;
 }
 
 const FileArea: React.FC<FileAreaProps> = ({
@@ -22,6 +24,7 @@ const FileArea: React.FC<FileAreaProps> = ({
     showTooltip,
     hideTooltip,
     tooltipVisible,
+    fileSize
 }) => {
 
     //分割名稱跟副檔名
@@ -59,10 +62,10 @@ const FileArea: React.FC<FileAreaProps> = ({
             } else if (file.type.startsWith('audio/')) {
                 icon = AudioIcon;
             } else {
-                icon = HelpSquareIcon; 
+                icon = HelpSquareIcon;
             }
 
-            setIconComponent(() => icon); 
+            setIconComponent(() => icon);
         }
     }, [file]);
 
@@ -105,6 +108,8 @@ const FileArea: React.FC<FileAreaProps> = ({
                 <div className="w-full h-12 pixel-art-border flex items-center justify-center">
                     <p className="pixel-art-font text-lg">{progress}%</p>
                 </div>
+                {/* 檔案大小 */}
+                <div className='flex items-center justify-end ml-4 w-40 truncate'>{formatFileSize(fileSize)}</div>
                 {/* 刪除按鈕 */}
                 <button onClick={deleteFile} className='ml-4 w-10'>
                     <DeleteIcon />
