@@ -9,9 +9,7 @@ import { getUniqueFilename } from './getUniqueFilename'
 const pump = promisify(pipeline);
 const { writeFile } = fsPromises;
 
-export const config = {
-    runtime: 'nodejs',
-};
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
     try {
