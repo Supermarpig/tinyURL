@@ -13,7 +13,7 @@ const FileUpload = () => {
     const [isDragOver, setIsDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const { handleUpload, progresses } = useFileUpload(); // 使用 useFileUpload hook來上傳檔案
+    const { handleUpload, progresses, uploadedFiles } = useFileUpload(); // 使用 useFileUpload hook來上傳檔案
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement> | DragEvent<HTMLDivElement>) => {
         let selectedFiles: File[] = [];
@@ -24,7 +24,9 @@ const FileUpload = () => {
             selectedFiles = Array.from(e.target.files);
         }
 
-        setFiles([...files, ...selectedFiles]);
+        // 過濾掉已經上傳的文件
+        const newFiles = selectedFiles.filter(file => !uploadedFiles.includes(file.name));
+        setFiles([...files, ...newFiles]);
     };
 
     const deleteFile = (index: number) => {
@@ -113,6 +115,21 @@ const FileUpload = () => {
                     >
                         上傳檔案
                     </Button>
+                </div>
+                {/* 已上傳的文件列表 */}
+                <div>
+                    {uploadedFiles.length > 0 ? (
+                        <div>
+                            <h3>已上傳的檔案：</h3>
+                            <ul>
+                                {uploadedFiles.map((fileName, index) => (
+                                    <li key={index}>{fileName}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    ) : (
+                        <></>
+                    )}
                 </div>
             </div>
         </div>

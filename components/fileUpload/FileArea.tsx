@@ -105,8 +105,14 @@ const FileArea: React.FC<FileAreaProps> = ({
                     )}
                 </div>
                 {/* 進度部分 */}
-                <div className="w-full h-12 pixel-art-border flex items-center justify-center">
-                    <p className="pixel-art-font text-lg">{progress}%</p>
+                <div className="w-full h-12 pixel-art-border flex items-center justify-center relative">
+                    <div className="w-full h-full bg-gray-200 rounded">
+                        {progress && <div
+                            className="h-full bg-green-400 "
+                            style={{ width: `${progress}%` }}
+                        />}
+                    </div>
+                    <p className="pixel-art-font text-lg absolute">{progress ? `${progress}%` : '0%'}</p>
                 </div>
                 {/* 檔案大小 */}
                 <div className='flex items-center justify-end ml-4 w-40 truncate'>{formatFileSize(fileSize)}</div>
