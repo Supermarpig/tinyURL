@@ -4,20 +4,20 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
-import { getUniqueFilename } from './getUniqueFilename '
+import { getUniqueFilename } from './getUniqueFilename'
 
 const pump = promisify(pipeline);
 const { writeFile } = fsPromises;
 
 export const config = {
-    runtime: 'nodejs', // 確保運行在 Node.js 環境中
+    runtime: 'nodejs',
 };
 
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
 
-        const files = formData.getAll('file') as Blob[]; // 獲取所有上傳的文件
+        const files = formData.getAll('file') as Blob[];
         const filenames = formData.getAll('filename') as string[];
         const chunkIndexes = formData.getAll('chunkIndex') as string[];
         const totalChunksArray = formData.getAll('totalChunks') as string[];
@@ -57,14 +57,27 @@ export async function POST(req: Request) {
                 const completeFilePath = join(uploadDir, uniqueFilename);
                 const writeStream = createWriteStream(completeFilePath);
 
-                for (let j = 0; j < parseInt(totalChunks); j++) {
-                    const chunkFilePath = join(tempDir, `${uniqueFilename}.part${j}`);
-                    const readStream = createReadStream(chunkFilePath);
-                    await pump(readStream, writeStream);
-                    unlinkSync(chunkFilePath); // 刪除已合併的分片
-                }
+                // 等待寫入結束
+                await new Promise<void>((resolve, reject) => {
+                    writeStream.on('finish', resolve);
+                    writeStream.on('error', reject);
 
-                writeStream.end();
+                    (async () => {
+                        for (let j = 0; j < parseInt(totalChunks); j++) {
+                            const chunkFilePath = join(tempDir, `${uniqueFilename}.part${j}`);
+                            const readStream = createReadStream(chunkFilePath);
+                            try {
+                                await pump(readStream, writeStream);
+                                unlinkSync(chunkFilePath); // 刪除已合併的分片
+                            } catch (error) {
+                                reject(error);
+                                break;
+                            }
+                        }
+                        writeStream.end(); // 確保結束
+                    })();
+                });
+
                 console.log(`File upload complete for ${uniqueFilename}`);
             }
         }

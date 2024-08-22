@@ -52,7 +52,7 @@ const useFileUpload = () => {
                 setProgresses(prevProgresses => {
                     const newProgresses = [...prevProgresses];
                     newProgresses[fileIndex] = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-                    console.log(newProgresses[0], "==========目前進度為");
+                    // console.log(newProgresses[0], "==========目前進度為");
                     return newProgresses;
                 });
             }
