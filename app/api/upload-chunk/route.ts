@@ -38,45 +38,69 @@ export async function POST(req: Request) {
             const uniqueFilename = getUniqueFilename(uploadDir, originalFilename);
 
             const tempDir = join(tmpdir(), 'chunks');
-            if (!existsSync(tempDir)) {
-                mkdirSync(tempDir, { recursive: true });
+            try {
+                if (!existsSync(tempDir)) {
+                    mkdirSync(tempDir, { recursive: true });
+                }
+            } catch (err) {
+                console.error('Failed to create temp directory:', err);
+                throw err;
             }
 
             const tempFilePath = join(tempDir, `${uniqueFilename}.part${chunkIndex}`);
-            if (!existsSync(tempFilePath)) {
-                const buffer = Buffer.from(await file.arrayBuffer());
-                await writeFile(tempFilePath, buffer);
-                console.log(`Received chunk ${Number(chunkIndex) + 1}/${totalChunks} for file ${uniqueFilename}`);
-            } else {
-                console.log(`Chunk ${chunkIndex} already exists for file ${uniqueFilename}, skipping upload.`);
+            console.log(`Saving chunk at: ${tempFilePath}`);
+            try {
+                if (!existsSync(tempFilePath)) {
+                    const buffer = Buffer.from(await file.arrayBuffer());
+                    await writeFile(tempFilePath, buffer);
+                    console.log(`Received chunk ${Number(chunkIndex) + 1}/${totalChunks} for file ${uniqueFilename}`);
+                } else {
+                    console.log(`Chunk ${chunkIndex} already exists for file ${uniqueFilename}, skipping upload.`);
+                }
+            } catch (error) {
+                console.error(`Failed to write chunk ${chunkIndex} for file ${uniqueFilename}:`, error);
+                throw error;
             }
 
+            // 合併之前檢查所有分片是否存在
             if (parseInt(chunkIndex) + 1 === parseInt(totalChunks)) {
                 const completeFilePath = join(uploadDir, uniqueFilename);
                 const writeStream = createWriteStream(completeFilePath);
 
-                // 等待寫入結束
-                await new Promise<void>((resolve, reject) => {
-                    writeStream.on('finish', resolve);
-                    writeStream.on('error', reject);
+                try {
+                    await new Promise<void>((resolve, reject) => {
+                        writeStream.on('finish', resolve);
+                        writeStream.on('error', reject);
 
-                    (async () => {
-                        for (let j = 0; j < parseInt(totalChunks); j++) {
-                            const chunkFilePath = join(tempDir, `${uniqueFilename}.part${j}`);
-                            const readStream = createReadStream(chunkFilePath);
-                            try {
-                                await pump(readStream, writeStream);
-                                unlinkSync(chunkFilePath); // 刪除已合併的分片
-                            } catch (error) {
-                                reject(error);
-                                break;
+                        (async () => {
+                            for (let j = 0; j < parseInt(totalChunks); j++) {
+                                const chunkFilePath = join(tempDir, `${uniqueFilename}.part${j}`);
+
+                                // 檢查每個分片是否存在，並進行重試或錯誤處理
+                                if (!existsSync(chunkFilePath)) {
+                                    console.error(`Chunk ${j} does not exist for file ${uniqueFilename}`);
+                                    reject(new Error(`Missing chunk ${j}`));
+                                    return;
+                                }
+
+                                const readStream = createReadStream(chunkFilePath);
+                                try {
+                                    await pump(readStream, writeStream);
+                                    unlinkSync(chunkFilePath); // 刪除已合併的分片
+                                } catch (error) {
+                                    console.error(`Error merging chunk ${j}:`, error);
+                                    reject(error);
+                                    return;
+                                }
                             }
-                        }
-                        writeStream.end(); // 確保結束
-                    })();
-                });
+                            writeStream.end(); // 確保結束
+                        })();
+                    });
 
-                console.log(`File upload complete for ${uniqueFilename}`);
+                    console.log(`File upload complete for ${uniqueFilename}`);
+                } catch (error) {
+                    console.error(`Failed to merge chunks for file ${uniqueFilename}:`, error);
+                }
             }
         }
 

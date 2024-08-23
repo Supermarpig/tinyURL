@@ -1,5 +1,5 @@
 'use client'
-import { useState, ChangeEvent, useRef, DragEvent } from 'react';
+import { useState, ChangeEvent, useRef, DragEvent, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { CloudUploadIcon } from '@/icons/CloudUploadIcon';
 import FileArea from '@/components/fileUpload/FileArea';
@@ -67,6 +67,14 @@ const FileUpload = () => {
         handleFileChange(event);
     };
 
+    // 刪除上傳完成的檔案
+    useEffect(() => {
+        const uniqueFiles = files.filter(
+            (file) => !uploadedFiles.includes(file.name)
+        );
+        setFiles(uniqueFiles);
+    }, [uploadedFiles]);
+
     return (
         <div className="min-h-screen p-4">
             <div className="container mx-auto">
@@ -120,10 +128,20 @@ const FileUpload = () => {
                 <div>
                     {uploadedFiles.length > 0 ? (
                         <div>
-                            <h3>已上傳的檔案：</h3>
+                            <h3 className='text-2xl font-bold text-center my-4'>已上傳的檔案：</h3>
                             <ul>
                                 {uploadedFiles.map((fileName, index) => (
-                                    <li key={index}>{fileName}</li>
+                                    <li key={index} className='flex mb-4 gap-4'>
+                                        <span className="w-1/4">{fileName}</span>
+                                        {/* 進度部分 */}
+                                        <div className="w-3/4 h-12 pixel-art-border flex items-center justify-center relative">
+                                            <div className="w-full h-full bg-gray-200 rounded">
+                                                {/* 直接渲染 100% 的進度 */}
+                                                <div className="h-full bg-green-400" style={{ width: '100%' }} />
+                                            </div>
+                                            <p className="pixel-art-font text-lg absolute">100%</p>
+                                        </div>
+                                    </li>
                                 ))}
                             </ul>
                         </div>
@@ -131,8 +149,8 @@ const FileUpload = () => {
                         <></>
                     )}
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
