@@ -4,10 +4,19 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
-import { getUniqueFilename } from './getUniqueFilename'
+import { getUniqueFilename } from './getUniqueFilename';
+import { Storage } from '@google-cloud/storage';
 
 const pump = promisify(pipeline);
 const { writeFile } = fsPromises;
+
+const storage = new Storage({
+    projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+    keyFilename: process.env.GOOGLE_CLOUD_KEY_FILE,
+});
+
+const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || '';
+const bucket = storage.bucket(bucketName);
 
 export const runtime = 'nodejs';
 
@@ -62,8 +71,26 @@ export async function POST(req: Request) {
                 throw error;
             }
 
-            // 合併之前檢查所有分片是否存在
+
+            const allChunksExist = (totalChunks: number, uniqueFilename: string, tempDir: string) => {
+                for (let i = 0; i < totalChunks; i++) {
+                    const chunkFilePath = join(tempDir, `${uniqueFilename}.part${i}`);
+                    if (!existsSync(chunkFilePath)) {
+                        return false;  // 如果任何一個分片缺失，返回 false
+                    }
+                }
+                return true;  // 所有分片都存在，返回 true
+            };
+            // 合併並上傳之前檢查所有分片是否存在
             if (parseInt(chunkIndex) + 1 === parseInt(totalChunks)) {
+                // 檢查所有分片是否存在
+                const allChunksPresent = allChunksExist(parseInt(totalChunks), uniqueFilename, tempDir);
+
+                if (!allChunksPresent) {
+                    console.error(`Some chunks are missing for file ${uniqueFilename}, cannot merge.`);
+                    return NextResponse.json({ error: 'Missing chunks, cannot merge' }, { status: 400 });
+                }
+
                 const completeFilePath = join(uploadDir, uniqueFilename);
                 const writeStream = createWriteStream(completeFilePath);
 
@@ -75,13 +102,6 @@ export async function POST(req: Request) {
                         (async () => {
                             for (let j = 0; j < parseInt(totalChunks); j++) {
                                 const chunkFilePath = join(tempDir, `${uniqueFilename}.part${j}`);
-
-                                // 檢查每個分片是否存在，並進行重試或錯誤處理
-                                if (!existsSync(chunkFilePath)) {
-                                    console.error(`Chunk ${j} does not exist for file ${uniqueFilename}`);
-                                    reject(new Error(`Missing chunk ${j}`));
-                                    return;
-                                }
 
                                 const readStream = createReadStream(chunkFilePath);
                                 try {
@@ -98,10 +118,27 @@ export async function POST(req: Request) {
                     });
 
                     console.log(`File upload complete for ${uniqueFilename}`);
+
+                    // 上傳合併後的文件到 Google Cloud Storage
+                    const destination = `uploads/${uniqueFilename}`;
+                    await bucket.upload(completeFilePath, {
+                        destination,
+                        resumable: false,
+                        gzip: true,
+                    });
+
+                    // 刪除本地臨時文件
+                    await fsPromises.unlink(completeFilePath);
+
+                    const publicUrl = `https://storage.googleapis.com/${bucketName}/${destination}`;
+                    console.log(`File successfully uploaded to ${publicUrl}`);
+
                 } catch (error) {
-                    console.error(`Failed to merge chunks for file ${uniqueFilename}:`, error);
+                    console.error(`Failed to merge and upload chunks for file ${uniqueFilename}:`, error);
+                    throw error;
                 }
             }
+
         }
 
         return NextResponse.json({ message: 'Files uploaded successfully' });

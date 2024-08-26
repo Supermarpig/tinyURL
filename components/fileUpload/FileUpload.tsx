@@ -13,7 +13,7 @@ const FileUpload = () => {
     const [isDragOver, setIsDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const { handleUpload, progresses, uploadedFiles } = useFileUpload(); // 使用 useFileUpload hook來上傳檔案
+    const { handleUpload, progresses, uploadedFiles, uploadedSize } = useFileUpload(); // 使用 useFileUpload hook來上傳檔案
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement> | DragEvent<HTMLDivElement>) => {
         let selectedFiles: File[] = [];
@@ -128,11 +128,14 @@ const FileUpload = () => {
                 <div>
                     {uploadedFiles.length > 0 ? (
                         <div>
-                            <h3 className='text-2xl font-bold text-center my-4'>已上傳的檔案：</h3>
+                            <h3 className='flex justify-center items-center text-2xl font-bold text-center my-4'>已上傳的檔案</h3>
+                            <div className='flex justify-end items-center'>
+                                <span>已上傳：{formatFileSize(uploadedSize)}</span>
+                            </div>
                             <ul>
                                 {uploadedFiles.map((fileName, index) => (
                                     <li key={index} className='flex mb-4 gap-4'>
-                                        <span className="w-1/4">{fileName}</span>
+                                        <span className="w-1/4 text-2xl font-bold justify-center items-center">{fileName}</span>
                                         {/* 進度部分 */}
                                         <div className="w-3/4 h-12 pixel-art-border flex items-center justify-center relative">
                                             <div className="w-full h-full bg-gray-200 rounded">
