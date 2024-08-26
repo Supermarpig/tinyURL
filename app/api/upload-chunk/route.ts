@@ -10,10 +10,16 @@ import { Storage } from '@google-cloud/storage';
 const pump = promisify(pipeline);
 const { writeFile } = fsPromises;
 
+// 從環境變數讀取並解析 JSON
+const googleCloudCredentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS!);
+
 const storage = new Storage({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-    keyFilename: process.env.GOOGLE_CLOUD_KEY_FILE,
+    credentials: googleCloudCredentials,  // 使用 credentials 傳遞已解析的 JSON
 });
+
+
+// console.log(googleCloudCredentials,"===========googleCloudCredentials😍😍😍")
 
 const bucketName = process.env.GOOGLE_CLOUD_BUCKET_NAME || '';
 const bucket = storage.bucket(bucketName);
@@ -71,7 +77,6 @@ export async function POST(req: Request) {
                 throw error;
             }
 
-
             const allChunksExist = (totalChunks: number, uniqueFilename: string, tempDir: string) => {
                 for (let i = 0; i < totalChunks; i++) {
                     const chunkFilePath = join(tempDir, `${uniqueFilename}.part${i}`);
@@ -81,6 +86,7 @@ export async function POST(req: Request) {
                 }
                 return true;  // 所有分片都存在，返回 true
             };
+
             // 合併並上傳之前檢查所有分片是否存在
             if (parseInt(chunkIndex) + 1 === parseInt(totalChunks)) {
                 // 檢查所有分片是否存在
@@ -138,7 +144,6 @@ export async function POST(req: Request) {
                     throw error;
                 }
             }
-
         }
 
         return NextResponse.json({ message: 'Files uploaded successfully' });
