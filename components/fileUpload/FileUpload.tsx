@@ -5,6 +5,7 @@ import { CloudUploadIcon } from '@/icons/CloudUploadIcon';
 import FileArea from '@/components/fileUpload/FileArea';
 import { formatFileSize } from '@/utils/fileSize';
 import useFileUpload from '@/utils/useFileUpload'; // 引入文件切割和上傳邏輯
+import FileName from './FileName'
 
 const FileUpload = () => {
     const [files, setFiles] = useState<File[]>([]);
@@ -138,7 +139,8 @@ const FileUpload = () => {
                             <ul>
                                 {uploadedFiles.map((fileName, index) => (
                                     <li key={index} className='flex mb-4 gap-4'>
-                                        <span className="w-1/4 text-2xl font-bold justify-center items-center">{fileName}</span>
+                                        {/* <span className="w-1/4 text-2xl font-bold justify-center items-center">{fileName}</span> */}
+                                        <FileName fileName={fileName} />
                                         {/* 進度部分 */}
                                         <div className="w-3/4 h-12 pixel-art-border flex items-center justify-center relative">
                                             <div className="w-full h-full bg-gray-200 rounded">
