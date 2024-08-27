@@ -120,14 +120,16 @@ const FileUpload = () => {
                         />
                     );
                 })}
-                <div className='flex items-center justify-center my-8'>
-                    <Button
-                        variant="destructive"
-                        onClick={() => handleUpload(files)}
-                    >
-                        上傳檔案
-                    </Button>
-                </div>
+                {files.length > 0 &&
+                    <div className='flex items-center justify-center my-8'>
+                        <Button
+                            variant="destructive"
+                            onClick={() => handleUpload(files)}
+                        >
+                            上傳檔案
+                        </Button>
+                    </div>
+                }
                 {/* 已上傳的文件列表 */}
                 <div>
                     {uploadedFiles.length > 0 ? (
