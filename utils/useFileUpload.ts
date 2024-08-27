@@ -4,7 +4,7 @@ const CHUNK_SIZE = 1 * 1024 * 1024; // 每個文件塊大小設為1MB
 const MAX_CONCURRENT_UPLOADS = 3; // 最多允許同時上傳 3 個分片
 
 const useFileUpload = () => {
-    const [progresses, setProgresses] = useState<number[]>([]);
+    const [progresses, setProgresses] = useState<Record<string, number>>({}); // 使用文件名作為key
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [uploadedSize, setUploadedSize] = useState(0); // 保存已上傳大小
     const workersRef = useRef<Worker[]>([]); // 使用 useRef 來儲存 worker
@@ -18,7 +18,7 @@ const useFileUpload = () => {
     const handleUpload = async (files: File[]) => {
         if (files.length === 0) return;
 
-        for (const [fileIndex, file] of Array.from(files.entries())) {
+        for (const file of files) {
             const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
             const chunkPromises: Promise<void>[] = [];
 
@@ -40,12 +40,12 @@ const useFileUpload = () => {
                             // 更新已上傳大小
                             setUploadedSize((prevUploadedSize) => prevUploadedSize + chunk.size);
 
-                            // 更新進度
-                            setProgresses((prevProgresses) => {
-                                const newProgresses = [...prevProgresses];
-                                newProgresses[fileIndex] = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-                                return newProgresses;
-                            });
+                            // 更新進度，使用文件名作為 key
+                            setProgresses(prevProgresses => ({
+                                ...prevProgresses,
+                                [file.name]: Math.round(((chunkIndex + 1) / totalChunks) * 100)
+                            }));
+
                             resolve();
                         } else {
                             reject(`Failed to upload chunk ${chunkIndex}`);

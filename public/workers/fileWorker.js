@@ -6,18 +6,28 @@ self.onmessage = async function (e) {
     formData.append('chunkIndex', chunkIndex.toString());
     formData.append('totalChunks', totalChunks.toString());
 
-    try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            body: formData,
-        });
+    let attempts = 0;
+    const maxAttempts = 3;
 
-        if (response.ok) {
-            self.postMessage({ chunkIndex, success: true });
-        } else {
-            throw new Error(`Failed to upload chunk ${chunkIndex}`);
+    while (attempts < maxAttempts) {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                self.postMessage({ chunkIndex, success: true });
+                return;
+            } else {
+                throw new Error(`Failed to upload chunk ${chunkIndex}`);
+            }
+        } catch (error) {
+            attempts += 1;
+            if (attempts >= maxAttempts) {
+                self.postMessage({ chunkIndex, success: false, error: error.message });
+                return;
+            }
         }
-    } catch (error) {
-        self.postMessage({ chunkIndex, success: false, error: error.message });
     }
 };

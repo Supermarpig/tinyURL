@@ -103,19 +103,22 @@ const FileUpload = () => {
                     <span>個 / 總檔案大小：</span>
                     <span className='text-blue-500'>{formatFileSize(totalFileSize)}</span>
                 </div>
-                {files.map((file, index) => (
-                    <FileArea
-                        key={index}
-                        file={file}
-                        index={index}
-                        progress={progresses[index]}
-                        deleteFile={() => deleteFile(index)}
-                        showTooltip={() => showTooltip(index)}
-                        hideTooltip={hideTooltip}
-                        tooltipVisible={tooltipIndex === index}
-                        fileSize={file.size}
-                    />
-                ))}
+                {files.map((file, index) => {
+                    const fileProgress = progresses[file.name];
+                    return (
+                        <FileArea
+                            key={file.name}
+                            file={file}
+                            index={index}
+                            progress={fileProgress}
+                            showTooltip={() => showTooltip(index)}
+                            deleteFile={() => deleteFile(index)}
+                            hideTooltip={hideTooltip}
+                            tooltipVisible={tooltipIndex === index}
+                            fileSize={file.size}
+                        />
+                    );
+                })}
                 <div className='flex items-center justify-center my-8'>
                     <Button
                         variant="destructive"
