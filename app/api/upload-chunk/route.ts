@@ -10,14 +10,15 @@ import { Storage } from '@google-cloud/storage';
 const pump = promisify(pipeline);
 const { writeFile } = fsPromises;
 
-// 從環境變數讀取並解析 JSON
-const googleCloudCredentials = JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS!);
+// 解碼 base64 編碼的 GOOGLE_CLOUD_CREDENTIALS 環境變數
+const credentialsBase64 = process.env.GOOGLE_CLOUD_CREDENTIALS!;
+const googleCloudCredentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString('utf-8'));
 
+// 創建 Storage 實例，使用已解析的 credentials 和 projectId
 const storage = new Storage({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-    credentials: googleCloudCredentials,  // 使用 credentials 傳遞已解析的 JSON
+    credentials: googleCloudCredentials,  // 使用解析後的 JSON 作為 credentials
 });
-
 
 // console.log(googleCloudCredentials,"===========googleCloudCredentials😍😍😍")
 
