@@ -10,10 +10,19 @@ import { Storage } from '@google-cloud/storage';
 const pump = promisify(pipeline);
 const { writeFile } = fsPromises;
 
+let googleCloudCredentials;
 // 解碼 base64 編碼的 GOOGLE_CLOUD_CREDENTIALS 環境變數
-const credentialsBase64 = process.env.GOOGLE_CLOUD_CREDENTIALS!;
-const googleCloudCredentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString('utf-8'));
+try {
+    // 解碼並解析 GOOGLE_CLOUD_CREDENTIALS
+    const credentialsBase64 = process.env.GOOGLE_CLOUD_CREDENTIALS!;
+    const decodedCredentials = Buffer.from(credentialsBase64, 'base64').toString('utf-8');
 
+    // 確保解碼後的內容是有效的 JSON
+    googleCloudCredentials = JSON.parse(decodedCredentials);
+
+} catch (error) {
+    console.error("Failed to parse Google Cloud credentials:", error);
+}
 // 創建 Storage 實例，使用已解析的 credentials 和 projectId
 const storage = new Storage({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
@@ -46,7 +55,13 @@ export async function POST(req: Request) {
             const chunkIndex = chunkIndexes[i];
             const totalChunks = totalChunksArray[i];
 
-            const uploadDir = join(process.cwd(), 'uploads');
+            // 創建一個本地的資料夾uploads
+            // const uploadDir = join(process.cwd(), 'uploads');
+            // if (!existsSync(uploadDir)) {
+            //     mkdirSync(uploadDir, { recursive: true });
+            // }
+
+            const uploadDir = join(tmpdir(), 'uploads');  // 使用臨時目錄
             if (!existsSync(uploadDir)) {
                 mkdirSync(uploadDir, { recursive: true });
             }
