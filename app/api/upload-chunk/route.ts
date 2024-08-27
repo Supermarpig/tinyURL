@@ -105,7 +105,7 @@ export async function POST(req: Request) {
 
             // 合併並上傳之前檢查所有分片是否存在
             if (parseInt(chunkIndex) + 1 === parseInt(totalChunks)) {
-                // 檢查所有分片是否存在
+                // 合併並上傳之前檢查所有分片是否存在
                 const allChunksPresent = allChunksExist(parseInt(totalChunks), uniqueFilename, tempDir);
 
                 if (!allChunksPresent) {
@@ -114,26 +114,19 @@ export async function POST(req: Request) {
                 }
 
                 const completeFilePath = join(uploadDir, uniqueFilename);
-                const writeStream = createWriteStream(completeFilePath);
 
                 try {
                     await new Promise<void>((resolve, reject) => {
+                        const writeStream = createWriteStream(completeFilePath);
                         writeStream.on('finish', resolve);
                         writeStream.on('error', reject);
 
                         (async () => {
                             for (let j = 0; j < parseInt(totalChunks); j++) {
                                 const chunkFilePath = join(tempDir, `${uniqueFilename}.part${j}`);
-
                                 const readStream = createReadStream(chunkFilePath);
-                                try {
-                                    await pump(readStream, writeStream);
-                                    unlinkSync(chunkFilePath); // 刪除已合併的分片
-                                } catch (error) {
-                                    console.error(`Error merging chunk ${j}:`, error);
-                                    reject(error);
-                                    return;
-                                }
+                                await pump(readStream, writeStream);
+                                unlinkSync(chunkFilePath); // 刪除已合併的分片
                             }
                             writeStream.end(); // 確保結束
                         })();
@@ -141,11 +134,11 @@ export async function POST(req: Request) {
 
                     console.log(`File upload complete for ${uniqueFilename}`);
 
-                    // 上傳合併後的文件到 Google Cloud Storage
+                    // 將合併後的文件上傳到 Google Cloud Storage
                     const destination = `uploads/${uniqueFilename}`;
                     await bucket.upload(completeFilePath, {
                         destination,
-                        resumable: false,
+                        resumable: true,  // 啟用可恢復上傳，確保在網絡中斷或其他意外情況下不會丟失進度
                         gzip: true,
                     });
 
@@ -160,6 +153,7 @@ export async function POST(req: Request) {
                     throw error;
                 }
             }
+
         }
 
         return NextResponse.json({ message: 'Files uploaded successfully' });

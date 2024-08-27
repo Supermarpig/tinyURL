@@ -5,10 +5,10 @@ const CHUNK_SIZE = 1 * 512 * 1024; // 每個文件塊大小設為512KB
 const MAX_CONCURRENT_UPLOADS = 3; // 最多允許同時上傳 3 個分片
 
 const useFileUpload = () => {
-    const [progresses, setProgresses] = useState<Record<string, number>>({}); // 使用文件名作為key
+    const [progresses, setProgresses] = useState<Record<string, number>>({});
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-    const [uploadedSize, setUploadedSize] = useState(0); // 保存已上傳大小
-    const workersRef = useRef<Worker[]>([]); // 使用 useRef 來儲存 worker
+    const [uploadedSize, setUploadedSize] = useState(0);
+    const workersRef = useRef<Worker[]>([]);
 
     useEffect(() => {
         return () => {
@@ -19,63 +19,69 @@ const useFileUpload = () => {
     const handleUpload = async (files: File[]) => {
         if (files.length === 0) return;
 
+        const uploadChunk = (file: File, chunk: Blob, chunkIndex: number, totalChunks: number, worker: Worker) => {
+            return new Promise<void>((resolve, reject) => {
+                worker.postMessage({ file, chunk, chunkIndex, totalChunks, apiUrl: '/api/upload-chunk' });
+
+                worker.onmessage = (e) => {
+                    const { success } = e.data;
+                    if (success) {
+                        setUploadedSize((prevUploadedSize) => prevUploadedSize + chunk.size);
+                        setProgresses(prevProgresses => ({
+                            ...prevProgresses,
+                            [file.name]: Math.round(((chunkIndex + 1) / totalChunks) * 100)
+                        }));
+                        resolve();
+                    } else {
+                        reject(`Failed to upload chunk ${chunkIndex}`);
+                    }
+                };
+
+                worker.onerror = (error) => {
+                    console.error('Worker error:', error);
+                    reject(error);
+                };
+            });
+        };
+
         for (const file of files) {
             const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-            const chunkPromises: Promise<void>[] = [];
+            const uploadQueue: Promise<void>[] = [];
+
+            // 使用 Worker 池來重用 Worker
+            const workerPool: Worker[] = Array.from({ length: MAX_CONCURRENT_UPLOADS }, () => {
+                const worker = new Worker('/workers/fileWorker.js');
+                workersRef.current.push(worker);
+                return worker;
+            });
+
+            let currentWorkerIndex = 0;
 
             for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
                 const start = chunkIndex * CHUNK_SIZE;
                 const end = Math.min(file.size, start + CHUNK_SIZE);
                 const chunk = file.slice(start, end);
 
-                const worker = new Worker('/workers/fileWorker.js');
-                workersRef.current.push(worker);
+                // 從 worker 池中選取一個 Worker
+                const worker = workerPool[currentWorkerIndex % MAX_CONCURRENT_UPLOADS];
+                currentWorkerIndex++;
 
-                const uploadPromise = new Promise<void>((resolve, reject) => {
-                    worker.postMessage({ file, chunk, chunkIndex, totalChunks, apiUrl: '/api/upload-chunk' });
+                const uploadPromise = uploadChunk(file, chunk, chunkIndex, totalChunks, worker);
+                uploadQueue.push(uploadPromise);
 
-                    worker.onmessage = (e) => {
-                        const { success, chunkIndex } = e.data;
-
-                        if (success) {
-                            // 更新已上傳大小
-                            setUploadedSize((prevUploadedSize) => prevUploadedSize + chunk.size);
-
-                            // 更新進度，使用文件名作為 key
-                            setProgresses(prevProgresses => ({
-                                ...prevProgresses,
-                                [file.name]: Math.round(((chunkIndex + 1) / totalChunks) * 100)
-                            }));
-
-                            resolve();
-                        } else {
-                            reject(`Failed to upload chunk ${chunkIndex}`);
-                        }
-                    };
-
-                    worker.onerror = (error) => {
-                        console.error('Worker error:', error);
-                        reject(error);
-                    };
-                });
-
-                chunkPromises.push(uploadPromise);
-
-                if (chunkPromises.length >= MAX_CONCURRENT_UPLOADS) {
-                    await Promise.all(chunkPromises);
-                    chunkPromises.length = 0;
+                if (uploadQueue.length >= MAX_CONCURRENT_UPLOADS) {
+                    await Promise.all(uploadQueue);
+                    uploadQueue.length = 0;
                 }
             }
 
-            if (chunkPromises.length > 0) {
-                await Promise.all(chunkPromises);
+            if (uploadQueue.length > 0) {
+                await Promise.allSettled(uploadQueue);
             }
 
-            // 文件上傳完成後將其添加到已上傳列表
             setUploadedFiles(prev => [...prev, file.name]);
         }
 
-        // 清理所有 Worker
         workersRef.current.forEach(worker => worker.terminate());
         workersRef.current = [];
     };
