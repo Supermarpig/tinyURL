@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
-const CHUNK_SIZE = 1 * 1024 * 1024; // 每個文件塊大小設為1MB
+// const CHUNK_SIZE = 1 * 1024 * 1024; // 每個文件塊大小設為1MB
+const CHUNK_SIZE = 1 * 512 * 1024; // 每個文件塊大小設為512KB
 const MAX_CONCURRENT_UPLOADS = 3; // 最多允許同時上傳 3 個分片
 
 const useFileUpload = () => {
