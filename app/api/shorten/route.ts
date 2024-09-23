@@ -11,12 +11,6 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'URL is required' }, { status: HttpStatusEnum.BadRequest });
         }
 
-        // // 檢查 URL 是否可連接
-        // const isValidUrl = await validateUrl(longUrl);
-        // if (!isValidUrl) {
-        //     return NextResponse.json({ error: 'Invalid or unreachable URL' }, { status: HttpStatusEnum.BadRequest });
-        // }
-
         // 檢查是否已經有存在的短網址
         const url = new URL(longUrl);
         const baseUrl = process.env.BASE_URL;

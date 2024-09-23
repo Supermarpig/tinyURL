@@ -93,6 +93,7 @@ const FileName: React.FC<FileNameProps> = ({
                 icon = TXTIcon;
                 break;
             case 'mp3':
+            case 'mp4':
             case 'wav':
                 icon = AudioIcon;
                 break;
