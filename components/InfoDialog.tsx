@@ -89,7 +89,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
     // 當初始值變化時重置表單
     useEffect(() => {
         reset(initialValues);
-    }, [initialValues, reset]);
+    }, [reset]);
 
     // 實時驗證
     const watchFields = useWatch({ control });
