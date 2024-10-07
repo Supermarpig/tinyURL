@@ -43,10 +43,11 @@ export default function Home() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setLoading(true);
 
-    const updateData: Partial<FormData> = {};
-    if (title) updateData.title = title;
-    if (description) updateData.description = description;
-    if (imageUrl) updateData.imageUrl = imageUrl;
+    const updateData: Partial<FormData> = {
+      title,
+      description,
+      imageUrl
+    };
 
     try {
       const res = await fetch('/api/shorten', {
