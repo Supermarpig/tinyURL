@@ -56,7 +56,9 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
         });
     };
 
-    const submitForm = async (data: FormData) => {
+    const submitForm = async (data: FormData, event: React.FormEvent) => {
+        event.preventDefault();  // 阻止默認表單提交行為
+        event.stopPropagation(); // 阻止事件冒泡
         setImageError(null);
         if (data.imageUrl) {
             try {
@@ -108,7 +110,11 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ onSubmit, initialValues }) => {
                     <DialogTitle>More Information</DialogTitle>
                     <DialogDescription>Fill in the additional details for the URL.</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(submitForm)} className="flex flex-col space-y-4">
+                <form onSubmit={(e) => {
+                    e.preventDefault(); // 阻止默認表單提交行為
+                    e.stopPropagation(); // 阻止事件冒泡
+                    handleSubmit((data) => submitForm(data, e))(e);
+                }} className="flex flex-col space-y-4">
                     <div>
                         <input
                             type="text"
