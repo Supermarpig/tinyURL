@@ -25,6 +25,7 @@ export interface IUrl extends Document {
     clicks: Click[];
     clickCount: number; // 用於快速統計總點擊數
     counts: Count[]; // 用於存儲不同類型的計數
+    visits: Click[]; // 用於存儲每次訪問的詳細信息
 }
 
 const ClickSchema = new Schema<Click>({
@@ -51,7 +52,8 @@ const UrlSchema = new Schema<IUrl>({
     shortUrl: String,
     clicks: { type: [ClickSchema], default: [] },
     clickCount: { type: Number, default: 0 },
-    counts: { type: [CountSchema], default: [] }
+    counts: { type: [CountSchema], default: [] },
+    visits: { type: [ClickSchema], default: [] } // 新增 visits 用於存儲每次訪問的詳細信息
 }, {
     timestamps: true, // 自動添加 createdAt 和 updatedAt 欄位
     collection: 'data' // 指定集合名稱

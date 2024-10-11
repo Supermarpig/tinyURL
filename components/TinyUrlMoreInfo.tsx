@@ -8,28 +8,47 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer"
-import { Button } from "./ui/button"
+import { buttonVariants } from "./ui/button"
+import { cn } from "@/lib/utils";
 
 interface TinyUrlMoreInfoProps {
-    shortUrl : string;
+    shortUrl: string;
+    visits: any[] | null;
 }
 
-const TinyUrlMoreInfo: React.FC<TinyUrlMoreInfoProps> = ({ shortUrl }) => {
+const TinyUrlMoreInfo: React.FC<TinyUrlMoreInfoProps> = ({ shortUrl, visits }) => {
+
     return (
         <Drawer>
-            <DrawerTrigger>
-                <Button className="ml-2 p-2 bg-gray-100 border border-black pixel-art-button ">Open Detail</Button>
+            <DrawerTrigger className={cn(buttonVariants())}>
+                Open Detail
+                {/* <button className="ml-2 p-2 bg-gray-100 border border-black pixel-art-button">Open Detail</button> */}
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader>
                     <DrawerTitle>{shortUrl}</DrawerTitle>
-                    <DrawerDescription>some details</DrawerDescription>
+                    <DrawerDescription>More detailed information about this short URL</DrawerDescription>
                 </DrawerHeader>
-                
+                <div className="mt-4">
+                    {visits && visits.length > 0 ? (
+                        <div>
+                            {visits.map((visit, index) => (
+                                <div key={index} className="mb-4">
+                                    <p><strong>Access Time:</strong> {new Date(visit.date).toLocaleString()}</p>
+                                    <p><strong>Referrer:</strong> {visit.referrer}</p>
+                                    <p><strong>User Agent:</strong> {visit.userAgent}</p>
+                                    <p><strong>IP Address:</strong> {visit.ipAddress}</p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>Loading details...</p>
+                    )}
+                </div>
                 <DrawerFooter>
-                    {/* <Button>Submit</Button> */}
-                    <DrawerClose>
-                        <Button variant="outline">Cancel</Button>
+                    <DrawerClose className={cn(buttonVariants())}>
+                        Cancel
+                        {/* <button className="ml-2 p-2 bg-gray-100 border border-black pixel-art-button">Cancel</button> */}
                     </DrawerClose>
                 </DrawerFooter>
             </DrawerContent>
@@ -37,4 +56,4 @@ const TinyUrlMoreInfo: React.FC<TinyUrlMoreInfoProps> = ({ shortUrl }) => {
     )
 }
 
-export default TinyUrlMoreInfo
+export default TinyUrlMoreInfo;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, Clipboard, Eye } from 'lucide-react';
 import TinyUrlMoreInfo from '@/components/TinyUrlMoreInfo'
-import {  toast } from "sonner";
+import { toast } from "sonner";
 
 interface ShortUrlDisplayProps {
     shortUrl: string;
@@ -11,6 +11,7 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
     const [copied, setCopied] = useState(false);
     const [clickCount, setClickCount] = useState<number | null>(null);
     const [createdAt, setCreatedAt] = useState<string | null>(null);
+    const [detailedInfo, setDetailedInfo] = useState<any | null>(null);
 
     // 使用正則表達式提取 shortId
     const shortId = shortUrl.split('/').pop();
@@ -36,13 +37,15 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
         if (response.ok) {
             setClickCount(data.clickCount);
             setCreatedAt(data.createdAt);
+            setDetailedInfo(data.detailedInfo); // 存儲更多詳細信息
             toast("Success! More detailed information acquired! 🎉📈🙌")
+            console.log(data,"===============detailedInfo")
         } else {
             console.error('Error fetching click count:', data.error);
         }
     };
 
-    if(!shortId) return
+    if (!shortId) return null;
 
     return (
         shortUrl && (
@@ -64,9 +67,8 @@ const ShortUrlDisplay: React.FC<ShortUrlDisplayProps> = ({ shortUrl }) => {
                 {clickCount !== null && createdAt && (
                     <div className="mt-2 text-gray-700 pixel-art-font">
                         From <span className="text-lg font-bold">{new Date(createdAt).toLocaleDateString()}</span> to today, there have been <span className="text-lg font-bold">{clickCount}</span> clicks💕💕💕!
-                        <TinyUrlMoreInfo shortUrl={shortUrl}/>
+                        <TinyUrlMoreInfo shortUrl={shortUrl} visits={detailedInfo} />
                     </div>
-                    
                 )}
             </div>
         )
