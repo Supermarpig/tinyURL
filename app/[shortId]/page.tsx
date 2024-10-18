@@ -13,7 +13,7 @@ interface RedirectPageProps {
 }
 
 async function fetchMetadata(shortId: string): Promise<{ metadata: MetadataProps, longUrl: string } | null> {
-    const res = await fetch(`${process.env.BASE_URL}/api/redirect/${shortId}`);
+    const res = await fetch(`${process.env.BASE_URL}/api/redirect/${shortId}`, { cache: 'no-store' });
 
     if (res.ok) {
         const data = await res.json();
